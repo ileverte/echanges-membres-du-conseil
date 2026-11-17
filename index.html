@@ -221,6 +221,111 @@ textarea.field{resize:vertical;min-height:90px}
   .subtabs{padding:0 12px}
 }
 @media (max-width:480px){ .top-new-label{display:none} }
+
+/* ===== Refonte graphique : bandeau vert de la résidence, tuiles par rubrique ===== */
+:root{--brand:#0F4D36;--brand-ink:#EEF7F2;--brand-soft:#E2F0E8;--lagoon:#0B7C86;--radius:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#0B2A1E;--brand-ink:#E3F1E9;--brand-soft:#16362A;--lagoon:#4CC4CF}}
+:root[data-theme="dark"]{--brand:#0B2A1E;--brand-ink:#E3F1E9;--brand-soft:#16362A;--lagoon:#4CC4CF}
+body::before{background:var(--brand)}
+.top{background:var(--brand);border-bottom:0;color:var(--brand-ink)}
+.top-in{padding-block:14px}
+.brand h1{color:#fff;font-size:1.2rem}
+.brand small{color:color-mix(in srgb,var(--brand-ink) 70%,transparent)}
+.brand-mark{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);width:38px;height:38px;border-radius:11px}
+.brand-mark .icon{color:#fff!important}
+.top .btn-ghost{color:var(--brand-ink)}
+.top .btn-ghost:hover{background:rgba(255,255,255,.1)}
+.top .btn-primary{background:#fff;color:#0F4D36;border-color:#fff}
+.top .btn-primary:hover{background:#E9F4EE}
+.me{border-color:rgba(255,255,255,.25);color:var(--brand-ink)}
+.me img{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+.tabs{background:var(--brand);padding-bottom:14px}
+.tab{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);color:var(--brand-ink);padding:7px 13px}
+.tab:hover{background:rgba(255,255,255,.13)}
+.tab span{color:inherit!important}
+.tab .icon{width:16px;height:16px;opacity:.9}
+.tab .n{background:rgba(255,255,255,.14);color:var(--brand-ink)}
+.tab[aria-pressed="true"]{background:#fff;color:#0F4D36;border-color:#fff}
+.tab[aria-pressed="true"] .n{background:#E2F0E8;color:#0F4D36}
+.filters{border-bottom:0;padding-bottom:4px;padding-top:14px}
+.stats{display:flex;flex-wrap:wrap;gap:6px;padding:2px 16px 6px}
+.stat{display:inline-flex;align-items:baseline;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:.78rem;color:var(--muted)}
+.stat b{font-family:var(--f-display);font-size:.98rem;color:var(--ink)}
+.stat.alert b{color:var(--danger)}
+.cards{gap:10px;padding-top:6px}
+.card{display:grid;grid-template-columns:42px minmax(0,1fr);column-gap:12px;row-gap:3px;border-radius:var(--radius);padding:14px;transition:border-color .15s,box-shadow .15s,transform .15s}
+.card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.card[aria-current="true"]{background:var(--brand-soft);border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:none;transform:none}
+.card .ctile{grid-row:1 / span 4;align-self:start}
+.card > :not(.ctile){grid-column:2;min-width:0}
+.card-top{margin:0}
+.card-top .lbl{letter-spacing:.07em}
+.card-when{margin-left:auto;font-size:.76rem;color:var(--muted);white-space:nowrap}
+.card h3{font-size:1rem}
+.card-foot{margin-top:6px}
+.ctile{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,currentColor 13%,transparent);flex:none}
+.ctile .icon{width:21px;height:21px}
+.dhead{padding:22px 24px 16px;gap:14px}
+.dtitle{display:flex;gap:14px;align-items:center}
+.dtitle .ctile{width:50px;height:50px;border-radius:14px}
+.dtitle .ctile .icon{width:24px;height:24px}
+.dhead h2{font-size:1.55rem;line-height:1.2}
+.meta{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.dtools{border-top:1px solid var(--line);padding-top:12px}
+.subtabs{background:var(--surface);padding:0 20px}
+.subtab{padding:12px 14px}
+.thread{padding:22px 24px;gap:12px}
+.dayline{align-self:stretch;display:flex;align-items:center;gap:12px;max-width:760px;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600;margin-top:6px}
+.dayline::before,.dayline::after{content:"";flex:1;height:1px;background:var(--line)}
+.msg img.av{width:34px;height:34px}
+.bubble{border-radius:4px 16px 16px 16px;box-shadow:0 1px 2px rgba(19,32,26,.05)}
+.msg.mine .bubble{border-radius:16px 4px 16px 16px;background:var(--brand-soft)}
+.contact{border-left:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(19,32,26,.05)}
+.contact .ic{background:color-mix(in srgb,var(--lagoon) 14%,transparent);color:var(--lagoon)}
+.sys{background:transparent;border:1px dashed var(--line)}
+.composer{padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px))}
+.composer textarea{border-radius:14px;background:var(--bg)}
+.welcome{max-width:640px;padding:40px 28px}
+.welcome h2{font-size:1.75rem}
+.wtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:22px 0;text-align:left}
+.wtile{display:flex;gap:12px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;text-align:left;color:var(--ink)}
+.wtile:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:var(--shadow)}
+.wtile b{display:block;font-size:.92rem}
+.wtile small{color:var(--muted);font-size:.78rem}
+.gate-wrap{display:grid;place-items:center;padding:28px 16px 40px}
+.gate-split{display:grid;grid-template-columns:1.05fr 1fr;width:min(960px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}
+.gate-art{background:var(--brand);color:var(--brand-ink);padding:34px;display:flex;flex-direction:column;gap:22px;justify-content:space-between}
+.gate-art .lbl{color:color-mix(in srgb,var(--brand-ink) 70%,transparent)}
+.gate-art h2{font-size:2rem;color:#fff;margin-top:6px}
+.gate-art p{margin:0;color:color-mix(in srgb,var(--brand-ink) 82%,transparent)}
+.gate-art ul{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:.9rem}
+.gate-art li{display:flex;gap:10px;align-items:center}
+.gate-art li .icon{width:18px;height:18px;flex:none;opacity:.85}
+.gate-art svg.art{width:100%;height:auto;max-height:170px}
+.gate-split .gate{border:0;border-radius:0;margin:0;max-width:none;padding:34px;box-shadow:none}
+.gate-split .gate h2{font-size:1.6rem}
+@media (max-width:760px){
+  .gate-split{grid-template-columns:1fr}
+  .gate-art{padding:22px}
+  .gate-art svg.art,.gate-art ul{display:none}
+  .gate-art h2{font-size:1.45rem}
+  .gate-split .gate{padding:22px}
+  .dhead,.thread{padding-left:16px;padding-right:16px}
+}
+@media (prefers-reduced-motion:reduce){.card,.card:hover{transition:none;transform:none}}
+.brand h1{white-space:nowrap}
+@media (max-width:820px){
+  .top-in{gap:8px;padding-block:10px}
+  .brand{flex:1;min-width:0}
+  .brand > div{min-width:0}
+  .brand h1{font-size:1.05rem;overflow:hidden;text-overflow:ellipsis}
+  .brand-mark{width:34px;height:34px}
+  .top-actions{gap:2px}
+  .top .lab{display:none}
+  .top .btn{padding:8px}
+  .tabs{padding-bottom:10px}
+  .tab{padding:6px 11px;font-size:.84rem}
+}
 </style>
 </head>
 <body>
@@ -243,8 +348,8 @@ textarea.field{resize:vertical;min-height:90px}
           <span class="top-new-label">Nouveau dossier</span>
         </button>
         <button class="me" id="btnMe" type="button" hidden title="Mon profil"><img alt="" id="meAv"><span id="meName"></span></button>
-        <button class="btn btn-ghost" id="btnAdmin" type="button" hidden title="Gérer les membres autorisés">Membres</button>
-        <button class="btn btn-ghost" id="btnOut" type="button" hidden title="Se déconnecter">Déconnexion</button>
+        <button class="btn btn-ghost" id="btnAdmin" type="button" hidden title="Gérer les membres autorisés" aria-label="Membres"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M21 20c0-2.6-1.6-4.8-3.8-5.6"/></svg><span class="lab">Membres</span></button>
+        <button class="btn btn-ghost" id="btnOut" type="button" hidden title="Se déconnecter" aria-label="Déconnexion"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg><span class="lab">Déconnexion</span></button>
       </div>
     </div>
     <nav class="tabs" id="tabs" aria-label="Rubriques"></nav>
@@ -286,6 +391,8 @@ const CFG = window.ILE_VERTE_CONFIG || {};
 const AUTH_HASH = location.hash;
 const sb = (window.supabase && CFG.supabaseUrl && CFG.supabaseAnonKey && !/VOTRE|XXXX/.test(CFG.supabaseUrl + CFG.supabaseAnonKey))
   ? window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey) : null;
+const WANT_DEMO = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]demo\b/.test(location.search);
+let DEMO = null;
 
 const CATS = {
   ago:          {label:"AGO",            long:"Assemblées générales",        pfx:"AGO"},
@@ -332,6 +439,23 @@ const fmtDT = t => t ? new Date(t).toLocaleString("fr-FR",{weekday:"short",day:"
 const fmtJour = t => t ? new Date(t).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) : "";
 const fmtHeure = t => t ? new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}).replace(":","h") : "";
 const icon = path => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+const ICS = {
+  tous:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 13h8M8 16h5"/>',
+  ago:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M21 20c0-2.6-1.6-4.8-3.8-5.6"/>',
+  travaux:'<path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>',
+  intervention:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/>',
+  signalement:'<path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/>',
+  reunion:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h4"/>'
+};
+const catIcon = c => icon(ICS[c]||ICS.tous);
+const catTile = c => `<span class="ctile cat-${esc(c)}" aria-hidden="true">${catIcon(c)}</span>`;
+const AV_COLORS = ["#17694A","#0B7C86","#7A3E8F","#9C5C07","#4B4FB5","#B3312A","#3F6F2A"];
+const avColor = id => { const s=String(nameOf(id)); let h=0; for(const ch of s) h=(h*31+ch.charCodeAt(0))|0; return AV_COLORS[Math.abs(h)%AV_COLORS.length]; };
+const ART = `<svg class="art" viewBox="0 0 320 150" fill="none" aria-hidden="true">
+  ${["A","B","C","D","E","F"].map((l,i)=>{ const x=10+i*52; return `<path d="M${x} 118V70l20-17 20 17v48z" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linejoin="round"/><path d="M${x+8} 80h8M${x+24} 80h8M${x+8} 94h8M${x+24} 94h8" stroke="rgba(255,255,255,.4)" stroke-width="3" stroke-linecap="round"/><text x="${x+20}" y="112" fill="rgba(255,255,255,.75)" font-family="sans-serif" font-size="10" text-anchor="middle">${l}</text>`; }).join("")}
+  <path d="M0 130q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+  <path d="M0 142q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+</svg>`;
 const qui = m => [m.qui, m.organisme].filter(Boolean).join(" · ") || "Interlocuteur non précisé";
 const fmtRel = t => {
   if(!t) return ""; const d = (Date.now()-t)/1000;
@@ -372,6 +496,7 @@ function msgToRow(b, dossierId){ return {dossier_id:dossierId, type:b.type||null
 async function dbUpdateDossier(id, patch){ const {error}=await sb.from("dossiers").update(dossierToRow(patch)).eq("id",id); if(error) throw error; }
 async function dbAddMsg(dossierId, body){ const {error}=await sb.from("messages").insert(msgToRow(body,dossierId)); if(error) throw error; }
 async function loadDossiers(){
+  if(DEMO){ S.loaded=true; renderAll(true); return; }
   const {data,error}=await sb.from("dossiers").select("*").order("maj_le",{ascending:false}).limit(1000);
   S.loaded=true;
   if(error){ toast("Impossible de lire les dossiers."); renderAll(); return; }
@@ -380,11 +505,13 @@ async function loadDossiers(){
   renderAll(true);
 }
 async function loadMembres(){
+  if(DEMO) return;
   const {data}=await sb.from("membres").select("*"); const m={}; (data||[]).forEach(x=>m[x.id]=x); S.membres=m; updateMe();
   if(S.loaded) renderAll(true);
 }
 async function loadMsgs(id=S.cur){
   if(!id) return;
+  if(DEMO){ S.msgsLoaded=true; S.msgs=(DEMO.msgs[id]||[]).slice().sort((a,b)=>(a.creeLe||0)-(b.creeLe||0)); renderSubtabs(); renderThread(); renderGallery(); renderJournal(); return; }
   const {data,error}=await sb.from("messages").select("*").eq("dossier_id",id).order("cree_le",{ascending:true}).limit(2000);
   if(S.cur!==id) return;
   S.msgsLoaded=true;
@@ -393,6 +520,7 @@ async function loadMsgs(id=S.cur){
   renderSubtabs(); renderThread(); renderGallery(); renderJournal();
 }
 function subscribeMsgs(id){
+  if(DEMO) return ()=>{};
   const ch=sb.channel("msgs-"+id).on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:"dossier_id=eq."+id},()=>loadMsgs(id)).subscribe();
   return ()=>sb.removeChannel(ch);
 }
@@ -412,7 +540,7 @@ function nameOf(id){
 function lotOf(id){ const m=S.membres[id]; return m && m.lot ? m.lot : ""; }
 function avOf(id){ const p=S.prof[id]; if(p && p.avatarUrl) return p.avatarUrl;
   const ch=(nameOf(id)[0]||"M").toUpperCase();
-  return "data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="#5A6A62"/><text x="16" y="21" font-family="sans-serif" font-size="14" fill="#fff" text-anchor="middle">${esc(ch)}</text></svg>`);
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="${avColor(id)}"/><text x="16" y="21" font-family="sans-serif" font-size="14" fill="#fff" text-anchor="middle">${esc(ch)}</text></svg>`);
 }
 function refreshProfiles(){}
 
@@ -421,7 +549,7 @@ function renderTabs(){
   const cnt = c => S.dossiers.filter(d => (c==="tous"||d.cat===c) && (S.f.st!=="actifs" || !["resolu","clos"].includes(d.statut))).length;
   const items = [["tous","Tous les dossiers",""], ...Object.entries(CATS).map(([k,v])=>[k,v.long,"cat-"+k])];
   $("#tabs").innerHTML = items.map(([k,l,cls]) =>
-    `<button type="button" class="tab ${cls}" data-cat="${k}" aria-pressed="${S.f.cat===k}">${k!=="tous"?'<span class="dot"></span>':""}<span style="color:${S.f.cat===k?"inherit":"var(--ink)"}">${esc(l)}</span><span class="n">${S.loaded?cnt(k):"…"}</span></button>`).join("");
+    `<button type="button" class="tab ${cls}" data-cat="${k}" aria-pressed="${S.f.cat===k}">${catIcon(k)}<span style="color:${S.f.cat===k?"inherit":"var(--ink)"}">${esc(l)}</span><span class="n">${S.loaded?cnt(k):"…"}</span></button>`).join("");
 }
 function filtered(){
   const q = S.f.q.trim().toLowerCase();
@@ -443,14 +571,22 @@ function renderList(){
     return;
   }
   if(!ds.length){ el.innerHTML=`<div class="empty"><h3>Aucun dossier ne correspond</h3><p>Modifiez la rubrique, le bâtiment ou le statut, ou effacez la recherche.</p></div>`; return; }
-  el.innerHTML = ds.map(d => {
+  const act=S.dossiers.filter(d=>!["resolu","clos"].includes(d.statut));
+  const week=Date.now()-7*86400e3;
+  const stats=`<div class="stats" aria-label="Résumé">
+    <span class="stat"><b>${act.length}</b> actifs</span>
+    ${act.filter(d=>d.priorite==="urgente").length?`<span class="stat alert"><b>${act.filter(d=>d.priorite==="urgente").length}</b> urgents</span>`:""}
+    <span class="stat"><b>${act.filter(d=>d.statut==="attente").length}</b> en attente syndic</span>
+    <span class="stat"><b>${S.dossiers.filter(d=>(d.majLe||0)>week).length}</b> mis à jour cette semaine</span></div>`;
+  el.innerHTML = stats + ds.map(d => {
     const c=CATS[d.cat]||CATS.signalement;
     const last=d.dernier;
     return `<button type="button" class="card" data-open="${esc(d.id)}" aria-current="${S.cur===d.id}">
-      <div class="card-top"><span class="chip chip-cat cat-${esc(d.cat)}">${esc(c.label)}</span>${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span><span class="mono muted" style="margin-left:auto">${esc(refOf(d))}</span></div>
+      ${catTile(d.cat)}
+      <div class="card-top"><span class="lbl cat-${esc(d.cat)}">${esc(c.label)}</span><span class="mono muted">${esc(refOf(d))}</span><span class="card-when">${esc(fmtRel(d.majLe))}</span></div>
       <h3>${esc(d.titre)}</h3>
       ${last&&last.texte?`<p><b style="color:var(--ink);font-weight:600">${esc(nameOf(last.auteur).split(" ")[0])} :</b> ${esc(last.texte)}</p>`:(d.description?`<p>${esc(d.description)}</p>`:"")}
-      <div class="card-foot">${d.batiment?`<span>${esc(d.batiment)}</span>`:""}<span>Mis à jour ${esc(fmtRel(d.majLe))}</span></div>
+      <div class="card-foot">${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span>${d.batiment?`<span>${esc(d.batiment)}</span>`:""}</div>
     </button>`;
   }).join("");
 }
@@ -461,14 +597,12 @@ function renderDetail(){
   const d=S.dossiers.find(x=>x.id===S.cur);
   if(!d){
     S.cur=null;
+    const tiles=Object.entries(CATS).map(([k,v])=>`<button type="button" class="wtile" data-cat="${k}">${catTile(k)}<span><b>${esc(v.long)}</b><small>${S.dossiers.filter(d=>d.cat===k).length} dossier(s)</small></span></button>`).join("");
     host.innerHTML = `<div class="welcome">
+      <span class="lbl">Conseil syndical · Résidence Ile Verte</span>
       <h2>Tous les dossiers de la résidence, au même endroit</h2>
-      <p class="muted">Choisissez un dossier dans la liste pour lire le fil des échanges. Chaque dossier garde ses messages, photos, enregistrements audio et PDF, dans l'ordre où ils ont été ajoutés.</p>
-      <ul><li><b style="color:var(--ink)">AGO</b> : convocations, procès-verbaux, résolutions votées.</li>
-      <li><b style="color:var(--ink)">Dossiers travaux</b> : suivi de chantier, constats, réceptions par bâtiment.</li>
-      <li><b style="color:var(--ink)">Demandes d'intervention</b> : ce qui a été demandé au syndic ou à l'entreprise, et quand.</li>
-      <li><b style="color:var(--ink)">Signalements</b> : un problème constaté, avec photos et message vocal.</li>
-      <li><b style="color:var(--ink)">Comptes rendus de réunion</b> : conseil syndical, syndic, entreprise, visite de chantier, avec participants, décisions et actions.</li></ul>
+      <p class="muted">Choisissez un dossier dans la liste, ou une rubrique ci-dessous. Chaque dossier garde ses messages, appels, photos, enregistrements audio et PDF, jour par jour.</p>
+      <div class="wtiles">${tiles}</div>
       ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}
     </div>`;
     return;
@@ -497,7 +631,7 @@ function renderHead(d){
       ${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}
       <span class="mono muted">${esc(refOf(d))}</span>
     </div>
-    <h2>${esc(d.titre)}</h2>
+    <div class="dtitle">${catTile(d.cat)}<h2>${esc(d.titre)}</h2></div>
     <div class="meta">
       <div><span class="lbl">Bâtiment</span><b>${esc(d.batiment||"Non précisé")}</b></div>
       ${d.dateRef?`<div><span class="lbl">Date</span><b>${esc(fmtDate(new Date(d.dateRef+"T12:00").getTime()))}</b></div>`:""}
@@ -550,7 +684,9 @@ function renderThread(){
   const nearBottom = t.scrollHeight - t.scrollTop - t.clientHeight < 120;
   if(!S.msgsLoaded){ t.innerHTML='<div class="empty"><span class="spin"></span> Chargement des messages…</div>'; return; }
   if(!S.msgs.length){ t.innerHTML=`<div class="empty"><h3>Pas encore de message</h3><p>Écrivez le premier message, ajoutez des photos du problème ou un message vocal.</p></div>`; return; }
-  t.innerHTML = S.msgs.map(m=>{
+  let lastDay="";
+  t.innerHTML = S.msgs.map(m=>{ const day=new Date(m.creeLe||0).toDateString(); const sep = day!==lastDay ? `<div class="dayline">${esc(fmtJour(m.creeLe))}</div>` : ""; lastDay=day; return sep + msgRow(m); }).join("");
+  function msgRow(m){
     if(m.type==="statut") return `<div class="sys">${esc(nameOf(m.auteur))} a passé le dossier en « ${esc(STATUTS[m.a]||m.a)} » · ${esc(fmtDT(m.creeLe))}</div>`;
     if(m.type==="contact") return contactHtml(m);
     if(m.type==="archive") return `<div class="sys">${esc(nameOf(m.auteur))} a archivé le dossier dans Google Drive · ${esc(fmtDT(m.creeLe))}</div>`;
@@ -558,7 +694,7 @@ function renderThread(){
     return `<div class="msg ${mine?"mine":""}"><img class="av" src="${esc(avOf(m.auteur))}" alt="">
       <div class="bubble"><div class="who"><b>${esc(mine?"Vous":nameOf(m.auteur))}</b>${lot?`<span class="muted">${esc(lot)}</span>`:""}<span class="muted">${esc(fmtDT(m.creeLe))}</span>${mine?`<button class="msg-del" type="button" data-delmsg="${esc(m.id)}">Supprimer</button>`:""}</div>
       ${m.texte?`<p class="txt">${esc(m.texte)}</p>`:""}${piecesHtml(m)}</div></div>`;
-  }).join("");
+  }
   if(nearBottom || S.scrollToEnd){ t.scrollTop=t.scrollHeight; S.scrollToEnd=false; }
 }
 function contactHtml(m){
@@ -1081,7 +1217,13 @@ function gate(kind, msg){
   if(!g){ g=document.createElement("div"); g.id="gateBox"; $("#top").after(g); }
   $("#main").hidden=true; $("#tabs").hidden=true;
   ["#btnNew","#btnMe","#btnOut","#btnAdmin"].forEach(x=>{ const b=$(x); if(b) b.hidden=true; });
-  const box=inner=>`<div style="padding:16px"><div class="gate">${inner}</div></div>`;
+  const box=inner=>`<div class="gate-wrap"><div class="gate-split">
+    <div class="gate-art"><div><span class="lbl">Résidence Ile Verte · Nouméa</span><h2>L'espace du conseil syndical</h2>
+      <p>Dossiers travaux, assemblées générales, appels avec le syndic et comptes rendus : tout l'historique, partagé entre les membres.</p></div>
+      ${ART}
+      <ul><li>${icon(ICS.travaux)}Suivi des travaux et des termites, bâtiment par bâtiment</li><li>${icon('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>')}Journal des appels : avec qui, quel jour, à quelle heure</li><li>${icon('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>')}Photos, messages vocaux et PDF</li></ul>
+    </div>
+    <div class="gate">${inner}</div></div></div>`;
   const contact=`<p class="note" style="margin:0">Besoin d'aide ? Écrivez au conseil syndical : <b style="user-select:all;overflow-wrap:anywhere">conseil.syndical.ile.verte@gmail.com</b></p>`;
   if(kind==="loading"){ g.innerHTML=box(`<span class="lbl">Dossiers Ile Verte</span><h2>Connexion en cours…</h2><p class="muted"><span class="spin"></span> Vérification de votre accès.</p>`); return; }
   if(kind==="config"){ g.innerHTML=box(`<span class="lbl">Configuration</span><h2>L'application n'est pas encore reliée à Supabase</h2><p class="muted" style="margin:0">Renseignez l'adresse du projet et la clé « anon » dans le fichier <b>config.js</b>, puis republiez le site. Le fichier README explique où les trouver.</p>`); return; }
@@ -1216,7 +1358,15 @@ async function start(session){
 $("#btnOut").addEventListener("click",()=>sb&&sb.auth.signOut());
 $("#btnAdmin").addEventListener("click",()=>adminPanel());
 fillSelects(); renderTabs(); renderDetail(); setTopH();
-if(!sb){ gate("config"); }
+if(WANT_DEMO){
+  const sc=document.createElement("script"); sc.src="demo-data.js";
+  sc.onload=()=>{ DEMO=window.ILE_VERTE_DEMO; S.me="demo-me"; S.email="apercu@local"; S.owner=true; S.editor=true; S.canWrite=true; S.db={}; S.assets=true;
+    S.membres={"demo-me":{nom:"Catherine N.",lot:"Bât. F · 176",role:"Membre du conseil"}};
+    S.dossiers=DEMO.dossiers; S.loaded=true; gate("ok");
+    ["#btnNew","#btnMe","#btnOut","#btnAdmin"].forEach(x=>{ const b=$(x); if(b) b.hidden=false; }); updateMe(); renderAll(); };
+  sc.onerror=()=>gate("config"); document.head.appendChild(sc);
+}
+else if(!sb){ gate("config"); }
 else {
   gate("loading");
   S.needPass = /type=(recovery|invite)/.test(AUTH_HASH);
