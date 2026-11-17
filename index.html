@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Dossiers Ile Verte</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%2317694A'/%3E%3Cpath d='M5 11.5 12 6l7 5.5M7 10.5V18h10v-7.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+.auth{display:grid;gap:12px}
+.auth label{display:grid;gap:5px}
+.adm-list{display:grid;gap:6px;max-height:300px;overflow:auto}
+.adm-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:.9rem}
+.adm-row span{min-width:0;overflow-wrap:anywhere}
+/* Layout: barre de rubriques en haut, liste des dossiers à gauche, fil du dossier à droite ; une seule colonne sur téléphone. */
+:root{
+  --bg:#F2F6F3; --surface:#FFFFFF; --surface-2:#E7EEE9; --ink:#13201A; --muted:#5A6A62; --line:#D3DED7;
+  --accent:#17694A; --accent-ink:#FFFFFF; --accent-soft:#DCEFE5;
+  --c-ago:#4B4FB5; --c-travaux:#9C5C07; --c-intervention:#08737E; --c-signalement:#B3312A; --c-reunion:#7A3E8F;
+  --ok:#17694A; --warn:#9C5C07; --danger:#B3312A;
+  --shadow:0 1px 2px rgba(19,32,26,.06),0 6px 24px rgba(19,32,26,.07);
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1512; --surface:#151F1A; --surface-2:#1C2923; --ink:#E3ECE6; --muted:#93A69B; --line:#2A3A32;
+  --accent:#4FC592; --accent-ink:#06140D; --accent-soft:#183428;
+  --c-ago:#A0A3F2; --c-travaux:#E6A64C; --c-intervention:#4CC4CF; --c-signalement:#F27F74; --c-reunion:#D59BE8;
+  --ok:#4FC592; --warn:#E6A64C; --danger:#F27F74; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1512; --surface:#151F1A; --surface-2:#1C2923; --ink:#E3ECE6; --muted:#93A69B; --line:#2A3A32;
+  --accent:#4FC592; --accent-ink:#06140D; --accent-soft:#183428;
+  --c-ago:#A0A3F2; --c-travaux:#E6A64C; --c-intervention:#4CC4CF; --c-signalement:#F27F74; --c-reunion:#D59BE8;
+  --ok:#4FC592; --warn:#E6A64C; --danger:#F27F74; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+.mono{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.02em}
+.muted{color:var(--muted)}
+.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--muted)}
+
+/* En-tête */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:14px;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-mark{width:34px;height:34px;flex:none;border-radius:9px;background:var(--accent);display:grid;place-items:center}
+.brand h1{font-size:1.12rem;line-height:1.1}
+.brand small{display:block;color:var(--muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.me{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px 3px 3px;max-width:220px}
+.me img{width:28px;height:28px;border-radius:50%}
+.me span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.86rem;font-weight:600}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-weight:600;font-size:.88rem;color:var(--muted)}
+.tab .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.tab .n{font-family:var(--f-mono);font-size:.72rem;background:var(--surface-2);color:var(--ink);border-radius:999px;padding:1px 7px}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-pressed="true"] .n{background:color-mix(in srgb,var(--bg) 20%,transparent);color:var(--bg)}
+.cat-reunion{color:var(--c-reunion)}
+.reu{display:grid;gap:10px}
+.reu section{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.reu section p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.cat-ago{color:var(--c-ago)} .cat-travaux{color:var(--c-travaux)} .cat-intervention{color:var(--c-intervention)} .cat-signalement{color:var(--c-signalement)}
+
+/* Boutons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;font-weight:600;font-size:.9rem;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{background:color-mix(in srgb,var(--accent) 88%,var(--ink))}
+.btn-danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.icon{width:18px;height:18px;flex:none}
+.btn-icon{padding:8px}
+
+/* Grille principale */
+.main{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);height:calc(100% - var(--toph,112px));min-height:0}
+.pane{min-width:0;min-height:0;overflow:auto}
+.list-pane{border-right:1px solid var(--line);background:var(--bg)}
+.detail-pane{background:var(--surface);display:flex;flex-direction:column}
+.filters{position:sticky;top:0;z-index:5;background:var(--bg);display:grid;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.filters-row{display:flex;gap:8px}
+.filters-row>*{flex:1;min-width:0}
+.field{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 11px}
+textarea.field{resize:vertical;min-height:90px}
+.search{position:relative}
+.search .icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{padding-left:34px}
+
+.cards{display:flex;flex-direction:column;gap:8px;padding:12px 16px 24px}
+.card{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;position:relative}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.card[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.card-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.card h3{font-size:1rem;line-height:1.3;font-weight:700}
+.card p{margin:4px 0 0;color:var(--muted);font-size:.86rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px;font-size:.78rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:.74rem;font-weight:700;background:var(--surface-2);color:var(--ink);white-space:nowrap}
+.chip-cat{background:color-mix(in srgb,currentColor 13%,transparent)}
+.st{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.st-ouvert{color:var(--c-intervention);border-color:color-mix(in srgb,var(--c-intervention) 45%,transparent)}
+.st-en_cours{color:var(--c-ago);border-color:color-mix(in srgb,var(--c-ago) 45%,transparent)}
+.st-attente{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.st-resolu{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,transparent)}
+.st-clos{color:var(--muted)}
+.urgent{background:var(--danger);color:#fff}
+.empty{padding:28px 20px;text-align:center;color:var(--muted)}
+.empty h3{color:var(--ink);font-size:1.05rem;margin-bottom:6px}
+
+/* Détail */
+.welcome{margin:auto;max-width:520px;padding:32px 24px;text-align:center}
+.welcome h2{font-size:1.6rem;margin-bottom:10px}
+.welcome ul{text-align:left;color:var(--muted);padding-left:20px;margin:16px 0 22px}
+.dhead{padding:16px 20px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.dhead-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dhead h2{font-size:1.4rem;line-height:1.2}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px 16px}
+.meta div{min-width:0}
+.meta b{display:block;font-weight:600;font-size:.9rem;overflow-wrap:anywhere}
+.desc{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;color:var(--ink)}
+.dtools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dtools select{width:auto}
+.subtabs{display:flex;gap:4px;padding:0 20px;border-bottom:1px solid var(--line)}
+.subtab{border:0;background:transparent;padding:10px 12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.subtab[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.back{display:none}
+
+.thread{flex:1;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.msg{display:flex;gap:10px;max-width:760px}
+.msg img.av{width:32px;height:32px;border-radius:50%;flex:none}
+.bubble{background:var(--surface);border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:10px 13px;min-width:0;flex:1}
+.msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.msg.mine .bubble{border-radius:14px 4px 14px 14px;background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 25%,var(--line))}
+.who{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:.8rem;margin-bottom:3px}
+.who b{font-size:.86rem}
+.txt{white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.sys{align-self:center;font-size:.8rem;color:var(--muted);background:var(--surface-2);border-radius:999px;padding:4px 12px;text-align:center}
+.pj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:8px}
+.pj-img{display:block;padding:0;border:0;background:var(--surface-2);border-radius:9px;overflow:hidden;aspect-ratio:1;max-width:100%}
+.pj-img img{width:100%;height:100%;object-fit:cover;display:block}
+.pj-audio{margin-top:8px;display:grid;gap:4px}
+.pj-audio audio,.pj-video video{width:100%;max-width:420px}
+.pj-file{display:flex;align-items:center;gap:10px;margin-top:8px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--ink);max-width:420px}
+.pj-file span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.contact{align-self:stretch;max-width:760px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c-ago);border-radius:10px;padding:11px 14px}
+.contact .ic{grid-row:span 3;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--c-ago) 14%,transparent);color:var(--c-ago)}
+.contact-h{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.contact-h b{font-size:.95rem}
+.when{font-family:var(--f-mono);font-size:.8rem;color:var(--ink);background:var(--surface-2);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.contact .sub{font-size:.8rem;color:var(--muted)}
+.contact .suite{font-size:.86rem;margin:4px 0 0;padding-top:6px;border-top:1px dashed var(--line);white-space:pre-wrap;overflow-wrap:anywhere}
+.jtable{width:100%;border-collapse:collapse;font-size:.88rem;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.jtable th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.jtable td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.jtable tr:last-child td{border-bottom:0}
+.jwrap{overflow-x:auto}
+.msg-del{border:0;background:transparent;color:var(--muted);font-size:.75rem;padding:0;margin-left:auto;text-decoration:underline}
+
+.gallery{flex:1;overflow:auto;padding:18px 20px;background:var(--bg);display:grid;gap:22px;align-content:start}
+.gallery section{display:grid;gap:10px}
+
+.composer{border-top:1px solid var(--line);background:var(--surface);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:grid;gap:8px}
+.composer textarea{min-height:46px;max-height:180px;resize:none}
+.comp-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.comp-row .send{margin-left:auto}
+.pending{display:flex;gap:6px;flex-wrap:wrap}
+.pend{display:flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:8px;padding:4px 6px 4px 8px;font-size:.8rem;max-width:100%}
+.pend img{width:30px;height:30px;object-fit:cover;border-radius:5px}
+.pend span{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pend button{border:0;background:transparent;padding:2px 4px;color:var(--muted)}
+.rec-on{color:var(--danger);border-color:var(--danger)}
+.note{font-size:.8rem;color:var(--muted)}
+
+/* Fenêtres */
+.overlay{position:fixed;inset:0;z-index:50;background:color-mix(in srgb,#000 55%,transparent);display:grid;place-items:center;padding:16px}
+.dialog{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);width:min(620px,100%);max-height:calc(100% - 32px);overflow:auto;padding:20px;display:grid;gap:14px}
+.dialog h2{font-size:1.3rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/-1}
+.form-grid label{display:grid;gap:5px;min-width:0}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.9);display:grid;grid-template-rows:auto 1fr auto;color:#fff}
+.lb-bar{display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.lb-bar button,.lb-nav button{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;padding:8px 12px}
+.lb-img{display:grid;place-items:center;min-height:0;padding:0 16px}
+.lb-img img{max-height:100%;max-width:100%;object-fit:contain}
+.lb-nav{display:flex;justify-content:center;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;box-shadow:var(--shadow);font-weight:500;max-width:calc(100% - 32px)}
+.gate{max-width:560px;margin:8vh auto;padding:28px 24px;background:var(--surface);border:1px solid var(--line);border-radius:16px;display:grid;gap:12px}
+.gate h2{font-size:1.5rem}
+.gate ol{margin:0;padding-left:20px;color:var(--muted);display:grid;gap:6px}
+.spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+@media (max-width:820px){
+  .main{grid-template-columns:minmax(0,1fr)}
+  .main[data-view="list"] .detail-pane{display:none}
+  .main[data-view="detail"] .list-pane{display:none}
+  .back{display:inline-flex}
+  .brand small{display:none}
+  .me span{display:none}
+  .me{padding:3px}
+  .form-grid{grid-template-columns:1fr}
+  .dhead,.thread,.gallery{padding-left:16px;padding-right:16px}
+  .subtabs{padding:0 12px}
+}
+@media (max-width:480px){ .top-new-label{display:none} }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="top" id="top">
+    <div class="top-in">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="icon" style="color:var(--accent-ink)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M12 20v-5c0-2 1.5-3.5 3.5-3.5"/><path d="M12 15c0-2-1.5-3.5-3.5-3.5"/></svg>
+        </div>
+        <div style="min-width:0">
+          <h1>Résidence Ile Verte</h1>
+          <small>Conseil syndical · dossiers et échanges</small>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-primary" id="btnNew" type="button" hidden>
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="top-new-label">Nouveau dossier</span>
+        </button>
+        <button class="me" id="btnMe" type="button" hidden title="Mon profil"><img alt="" id="meAv"><span id="meName"></span></button>
+        <button class="btn btn-ghost" id="btnAdmin" type="button" hidden title="Gérer les membres autorisés">Membres</button>
+        <button class="btn btn-ghost" id="btnOut" type="button" hidden title="Se déconnecter">Déconnexion</button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Rubriques"></nav>
+  </header>
+
+  <main class="main" id="main" data-view="list">
+    <section class="pane list-pane" aria-label="Liste des dossiers">
+      <div class="filters">
+        <div class="search">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input class="field" id="fQ" type="search" placeholder="Rechercher un dossier, un mot…" autocomplete="off">
+        </div>
+        <div class="filters-row">
+          <select class="field" id="fBat" aria-label="Bâtiment"></select>
+          <select class="field" id="fSt" aria-label="Statut">
+            <option value="actifs">Dossiers actifs</option>
+            <option value="">Tous les statuts</option>
+          </select>
+        </div>
+      </div>
+      <div class="cards" id="list"><div class="empty"><span class="spin"></span> Chargement des dossiers…</div></div>
+    </section>
+    <section class="pane detail-pane" id="detail" aria-label="Dossier"></section>
+  </main>
+</div>
+
+<input type="file" id="inPhoto" accept="image/*" multiple hidden>
+<input type="file" id="inAudio" accept="audio/*,.m4a,.mp3,.opus,.ogg,.wav,.aac,.amr" hidden>
+<input type="file" id="inDoc" accept="application/pdf,video/mp4,video/webm" multiple hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CFG = window.ILE_VERTE_CONFIG || {};
+const AUTH_HASH = location.hash;
+const sb = (window.supabase && CFG.supabaseUrl && CFG.supabaseAnonKey && !/VOTRE|XXXX/.test(CFG.supabaseUrl + CFG.supabaseAnonKey))
+  ? window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey) : null;
+
+const CATS = {
+  ago:          {label:"AGO",            long:"Assemblées générales",        pfx:"AGO"},
+  travaux:      {label:"Travaux",        long:"Dossiers travaux",            pfx:"TRX"},
+  intervention: {label:"Interventions",  long:"Demandes d'intervention",     pfx:"INT"},
+  signalement:  {label:"Signalements",   long:"Signalements de problème",    pfx:"SIG"},
+  reunion:      {label:"Réunions",       long:"Comptes rendus de réunion",   pfx:"CR"},
+};
+const TYPES_REU = ["Réunion du conseil syndical","Réunion avec le syndic","Réunion avec l'entreprise","Réunion de chantier / visite sur place","Réunion avec le maître d'œuvre","Réunion avec un expert, un huissier ou un avocat","Autre réunion"];
+const STATUTS = {ouvert:"Ouvert", en_cours:"En cours", attente:"En attente syndic / entreprise", resolu:"Résolu", clos:"Clos"};
+const CANAUX = {
+  appel:   {label:"Appel téléphonique", ic:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>'},
+  message: {label:"Message (SMS, WhatsApp)", ic:'<path d="M4 5h16v11H8l-4 4z"/>'},
+  email:   {label:"E-mail", ic:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'},
+  courrier:{label:"Courrier / recommandé", ic:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>'},
+  rdv:     {label:"Rendez-vous / visite sur place", ic:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'},
+};
+const SENS = {sortant:"Passé par le conseil", entrant:"Reçu par le conseil"};
+const ORGAS = ["Syndic Nouméa Immobilier","Entreprise COSTENTIN","Maître d'œuvre","Huissier","Assurance","Copropriétaire","Locataire","Mairie"];
+const BATS = ["Bâtiment A","Bâtiment B","Bâtiment C","Bâtiment D","Bâtiment E","Bâtiment F","Parties communes","Toute la résidence"];
+
+const I = {
+  photo:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  audio:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  doc:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+  dict:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg>',
+  send:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 20 4l-6 16-3-7z"/></svg>',
+  back:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  edit:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  link:'<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+};
+
+const S = {
+  db:null, user:null, assets:null, dict:null,
+  me:null, owner:false, editor:false, canWrite:true,
+  dossiers:[], loaded:false, membres:{}, prof:{},
+  f:{cat:"tous", bat:"", st:"actifs", q:""},
+  cur:null, msgs:[], unsubMsgs:null, sub:"fil", pend:[], sending:false, audioCtx:null,
+};
+
+/* ---------- utilitaires ---------- */
+const fmtDate = t => t ? new Date(t).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"}) : "";
+const fmtDT = t => t ? new Date(t).toLocaleString("fr-FR",{weekday:"short",day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+const fmtJour = t => t ? new Date(t).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}) : "";
+const fmtHeure = t => t ? new Date(t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}).replace(":","h") : "";
+const icon = path => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+const qui = m => [m.qui, m.organisme].filter(Boolean).join(" · ") || "Interlocuteur non précisé";
+const fmtRel = t => {
+  if(!t) return ""; const d = (Date.now()-t)/1000;
+  if(d<60) return "à l'instant"; if(d<3600) return `il y a ${Math.floor(d/60)} min`;
+  if(d<86400) return `il y a ${Math.floor(d/3600)} h`; if(d<86400*7) return `il y a ${Math.floor(d/86400)} j`;
+  return fmtDate(t);
+};
+const fmtSize = b => b>1e6 ? (b/1e6).toFixed(1).replace(".",",")+" Mo" : Math.max(1,Math.round(b/1e3))+" Ko";
+const fmtDur = s => s ? `${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,"0")}` : "";
+const refOf = d => `${CATS[d.cat]?.pfx||"DOS"}-${new Date(d.creeLe||Date.now()).toISOString().slice(2,10).replace(/-/g,"")}`;
+const URLS = {}; const NEED = new Set(); let urlTimer = null;
+const blobUrl = path => {
+  const c = URLS[path]; if (c && c.exp > Date.now()) return c.url;
+  NEED.add(path); clearTimeout(urlTimer); urlTimer = setTimeout(fetchUrls, 30); return "";
+};
+async function fetchUrls(){
+  const paths=[...NEED]; NEED.clear(); if(!paths.length||!sb) return;
+  const {data,error}=await sb.storage.from("pieces").createSignedUrls(paths, 3600);
+  if(error||!data) return;
+  let n=0; data.forEach(x=>{ if(x.signedUrl&&x.path){ URLS[x.path]={url:x.signedUrl,exp:Date.now()+3300e3}; n++; } });
+  if(n && S.cur && $("#dhead")){ renderThread(); renderGallery(); renderJournal(); }
+}
+const ts = v => v ? new Date(v).getTime() : null;
+const iso = n => n ? new Date(n).toISOString() : null;
+function rowToDossier(r){ return {id:r.id, cat:r.cat, titre:r.titre, batiment:r.batiment||"", statut:r.statut||"ouvert", priorite:r.priorite||"normale",
+  dateRef:r.date_ref||"", intervenant:r.intervenant||"", reference:r.reference||"", description:r.description||"", reunion:r.reunion||null,
+  auteur:r.auteur||(r.auteur_nom?"nom:"+r.auteur_nom:null), creeLe:ts(r.cree_le), majLe:ts(r.maj_le), dernier:r.dernier||null}; }
+function rowToMsg(r){ return {id:r.id, type:r.type, auteur:r.auteur||(r.auteur_nom?"nom:"+r.auteur_nom:null), texte:r.texte||"", pieces:r.pieces||[],
+  creeLe:ts(r.cree_le), canal:r.canal, sens:r.sens, quand:ts(r.quand), duree:r.duree, qui:r.qui, organisme:r.organisme, tel:r.tel, suite:r.suite, de:r.de, a:r.a}; }
+function dossierToRow(b){
+  const map={cat:"cat",titre:"titre",batiment:"batiment",statut:"statut",priorite:"priorite",dateRef:"date_ref",intervenant:"intervenant",reference:"reference",description:"description",reunion:"reunion",dernier:"dernier"};
+  const o={}; for(const k in b){ if(k in map) o[map[k]] = (k==="dateRef" && !b[k]) ? null : b[k]; else if(k==="majLe") o.maj_le=iso(b[k]); }
+  return o;
+}
+function msgToRow(b, dossierId){ return {dossier_id:dossierId, type:b.type||null, auteur:S.me, auteur_nom:nameOf(S.me), texte:b.texte||null, pieces:b.pieces||[],
+  cree_le:iso(b.creeLe||Date.now()), canal:b.canal||null, sens:b.sens||null, quand:b.quand?iso(b.quand):null, duree:b.duree??null, qui:b.qui||null,
+  organisme:b.organisme||null, tel:b.tel||null, suite:b.suite||null, de:b.de||null, a:b.a||null}; }
+async function dbUpdateDossier(id, patch){ const {error}=await sb.from("dossiers").update(dossierToRow(patch)).eq("id",id); if(error) throw error; }
+async function dbAddMsg(dossierId, body){ const {error}=await sb.from("messages").insert(msgToRow(body,dossierId)); if(error) throw error; }
+async function loadDossiers(){
+  const {data,error}=await sb.from("dossiers").select("*").order("maj_le",{ascending:false}).limit(1000);
+  S.loaded=true;
+  if(error){ toast("Impossible de lire les dossiers."); renderAll(); return; }
+  S.dossiers=data.map(rowToDossier);
+  if(S.cur && !S.dossiers.some(d=>d.id===S.cur)){ closeDossier(); return; }
+  renderAll(true);
+}
+async function loadMembres(){
+  const {data}=await sb.from("membres").select("*"); const m={}; (data||[]).forEach(x=>m[x.id]=x); S.membres=m; updateMe();
+  if(S.loaded) renderAll(true);
+}
+async function loadMsgs(id=S.cur){
+  if(!id) return;
+  const {data,error}=await sb.from("messages").select("*").eq("dossier_id",id).order("cree_le",{ascending:true}).limit(2000);
+  if(S.cur!==id) return;
+  S.msgsLoaded=true;
+  if(error){ renderThread(); toast("Impossible de lire les messages de ce dossier."); return; }
+  S.msgs=data.map(rowToMsg);
+  renderSubtabs(); renderThread(); renderGallery(); renderJournal();
+}
+function subscribeMsgs(id){
+  const ch=sb.channel("msgs-"+id).on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:"dossier_id=eq."+id},()=>loadMsgs(id)).subscribe();
+  return ()=>sb.removeChannel(ch);
+}
+async function refreshCur(){ await Promise.all([loadDossiers(), loadMsgs()]); }
+function updateMe(){ const a=$("#meAv"), n=$("#meName"); if(!a||!S.me) return; a.src=avOf(S.me); const nm=nameOf(S.me); n.textContent = nm==="Membre du conseil" ? (S.email||"Mon profil") : nm; }
+let toastT;
+function toast(msg){ let t=$(".toast"); if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t);} t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,4200); }
+
+function nameOf(id){
+  if(!id) return "Membre";
+  if(String(id).startsWith("nom:")) return id.slice(4) || "Membre";
+  const m = S.membres[id];
+  if(m && m.nom) return m.nom;
+  if(m && m.email) return m.email.split("@")[0];
+  return "Membre du conseil";
+}
+function lotOf(id){ const m=S.membres[id]; return m && m.lot ? m.lot : ""; }
+function avOf(id){ const p=S.prof[id]; if(p && p.avatarUrl) return p.avatarUrl;
+  const ch=(nameOf(id)[0]||"M").toUpperCase();
+  return "data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="16" fill="#5A6A62"/><text x="16" y="21" font-family="sans-serif" font-size="14" fill="#fff" text-anchor="middle">${esc(ch)}</text></svg>`);
+}
+function refreshProfiles(){}
+
+/* ---------- rendu : rubriques et liste ---------- */
+function renderTabs(){
+  const cnt = c => S.dossiers.filter(d => (c==="tous"||d.cat===c) && (S.f.st!=="actifs" || !["resolu","clos"].includes(d.statut))).length;
+  const items = [["tous","Tous les dossiers",""], ...Object.entries(CATS).map(([k,v])=>[k,v.long,"cat-"+k])];
+  $("#tabs").innerHTML = items.map(([k,l,cls]) =>
+    `<button type="button" class="tab ${cls}" data-cat="${k}" aria-pressed="${S.f.cat===k}">${k!=="tous"?'<span class="dot"></span>':""}<span style="color:${S.f.cat===k?"inherit":"var(--ink)"}">${esc(l)}</span><span class="n">${S.loaded?cnt(k):"…"}</span></button>`).join("");
+}
+function filtered(){
+  const q = S.f.q.trim().toLowerCase();
+  return S.dossiers.filter(d => {
+    if(S.f.cat!=="tous" && d.cat!==S.f.cat) return false;
+    if(S.f.bat && d.batiment!==S.f.bat) return false;
+    if(S.f.st==="actifs" && ["resolu","clos"].includes(d.statut)) return false;
+    if(S.f.st && S.f.st!=="actifs" && d.statut!==S.f.st) return false;
+    if(q){ const r=d.reunion||{}; const hay=[d.titre,d.description,d.reference,d.intervenant,d.batiment,d.dernier?.texte,refOf(d),r.participants,r.odj,r.decisions,r.actions,r.lieu,r.type].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+}
+function renderList(){
+  const el=$("#list");
+  if(!S.loaded){ return; }
+  const ds=filtered();
+  if(!S.dossiers.length){
+    el.innerHTML = `<div class="empty"><h3>Aucun dossier pour l'instant</h3><p>Créez le premier dossier : un procès-verbal d'AGO, le suivi d'un chantier, une demande d'intervention ou un problème constaté. Chaque dossier a son propre fil de messages, photos et audios.</p>${S.canWrite?'<button class="btn btn-primary" type="button" data-act="new">Créer le premier dossier</button>':""}</div>`;
+    return;
+  }
+  if(!ds.length){ el.innerHTML=`<div class="empty"><h3>Aucun dossier ne correspond</h3><p>Modifiez la rubrique, le bâtiment ou le statut, ou effacez la recherche.</p></div>`; return; }
+  el.innerHTML = ds.map(d => {
+    const c=CATS[d.cat]||CATS.signalement;
+    const last=d.dernier;
+    return `<button type="button" class="card" data-open="${esc(d.id)}" aria-current="${S.cur===d.id}">
+      <div class="card-top"><span class="chip chip-cat cat-${esc(d.cat)}">${esc(c.label)}</span>${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span><span class="mono muted" style="margin-left:auto">${esc(refOf(d))}</span></div>
+      <h3>${esc(d.titre)}</h3>
+      ${last&&last.texte?`<p><b style="color:var(--ink);font-weight:600">${esc(nameOf(last.auteur).split(" ")[0])} :</b> ${esc(last.texte)}</p>`:(d.description?`<p>${esc(d.description)}</p>`:"")}
+      <div class="card-foot">${d.batiment?`<span>${esc(d.batiment)}</span>`:""}<span>Mis à jour ${esc(fmtRel(d.majLe))}</span></div>
+    </button>`;
+  }).join("");
+}
+
+/* ---------- rendu : dossier ---------- */
+function renderDetail(){
+  const host=$("#detail");
+  const d=S.dossiers.find(x=>x.id===S.cur);
+  if(!d){
+    S.cur=null;
+    host.innerHTML = `<div class="welcome">
+      <h2>Tous les dossiers de la résidence, au même endroit</h2>
+      <p class="muted">Choisissez un dossier dans la liste pour lire le fil des échanges. Chaque dossier garde ses messages, photos, enregistrements audio et PDF, dans l'ordre où ils ont été ajoutés.</p>
+      <ul><li><b style="color:var(--ink)">AGO</b> : convocations, procès-verbaux, résolutions votées.</li>
+      <li><b style="color:var(--ink)">Dossiers travaux</b> : suivi de chantier, constats, réceptions par bâtiment.</li>
+      <li><b style="color:var(--ink)">Demandes d'intervention</b> : ce qui a été demandé au syndic ou à l'entreprise, et quand.</li>
+      <li><b style="color:var(--ink)">Signalements</b> : un problème constaté, avec photos et message vocal.</li>
+      <li><b style="color:var(--ink)">Comptes rendus de réunion</b> : conseil syndical, syndic, entreprise, visite de chantier, avec participants, décisions et actions.</li></ul>
+      ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}
+    </div>`;
+    return;
+  }
+  if(!host.querySelector(`[data-dossier="${CSS.escape(d.id)}"]`)){
+    host.innerHTML = `<div data-dossier="${esc(d.id)}" style="display:contents">
+      <div class="dhead" id="dhead"></div>
+      <div class="subtabs" id="subtabs"></div>
+      <div class="thread" id="thread" aria-live="polite"></div>
+      <div class="gallery" id="gallery" hidden></div>
+      <div class="gallery" id="journal" hidden></div>
+      <div class="composer" id="composer"></div>
+    </div>`;
+    renderComposer();
+  }
+  renderHead(d); renderSubtabs(); renderThread(); renderGallery(); renderJournal();
+}
+function renderHead(d){
+  const c=CATS[d.cat]||CATS.signalement;
+  const mayEdit = S.canWrite && (d.auteur===S.me || S.editor || S.owner);
+  const stOpts = Object.entries(STATUTS).map(([k,v])=>`<option value="${k}" ${d.statut===k?"selected":""}>${esc(v)}</option>`).join("");
+  $("#dhead").innerHTML = `
+    <div class="dhead-top">
+      <button class="btn btn-ghost btn-icon back" type="button" data-act="back" aria-label="Retour à la liste">${I.back}</button>
+      <span class="chip chip-cat cat-${esc(d.cat)}">${esc(c.long)}</span>
+      ${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}
+      <span class="mono muted">${esc(refOf(d))}</span>
+    </div>
+    <h2>${esc(d.titre)}</h2>
+    <div class="meta">
+      <div><span class="lbl">Bâtiment</span><b>${esc(d.batiment||"Non précisé")}</b></div>
+      ${d.dateRef?`<div><span class="lbl">Date</span><b>${esc(fmtDate(new Date(d.dateRef+"T12:00").getTime()))}</b></div>`:""}
+      ${d.intervenant?`<div><span class="lbl">Intervenant</span><b>${esc(d.intervenant)}</b></div>`:""}
+      ${d.reference?`<div><span class="lbl">Référence</span><b>${esc(d.reference)}</b></div>`:""}
+      <div><span class="lbl">Ouvert par</span><b>${esc(nameOf(d.auteur))}</b></div>
+    </div>
+    ${d.cat==="reunion"&&d.reunion?reuHtml(d):(d.description?`<p class="desc">${esc(d.description)}</p>`:"")}
+    <div class="dtools">
+      ${S.canWrite?`<label class="lbl" for="stSel" style="margin-right:2px">Statut</label><select class="field" id="stSel">${stOpts}</select>`:`<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span>`}
+      <button class="btn btn-ghost" type="button" data-act="copylink">${I.link}<span>Lien</span></button>
+      <button class="btn btn-ghost" type="button" data-act="print" title="Imprimer le dossier ou l'enregistrer en PDF">${icon('<path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/>')}<span>Imprimer / PDF</span></button>
+      ${mayEdit?`<button class="btn btn-ghost" type="button" data-act="edit">${I.edit}<span>Modifier</span></button>`:""}
+      ${(S.owner||d.auteur===S.me)?`<button class="btn btn-ghost btn-danger" type="button" data-act="delask">Supprimer</button>`:""}
+    </div>`;
+}
+function reuHtml(d){
+  const r=d.reunion||{};
+  const box=(t,v)=>v?`<section><span class="lbl">${esc(t)}</span><p>${esc(v)}</p></section>`:"";
+  return `<div class="reu">
+    <div class="meta"><div><span class="lbl">Type</span><b>${esc(r.type||"Réunion")}</b></div>${r.heure?`<div><span class="lbl">Heure</span><b>${esc(r.heure.replace(":","h"))}</b></div>`:""}${r.lieu?`<div><span class="lbl">Lieu</span><b>${esc(r.lieu)}</b></div>`:""}</div>
+    ${box("Participants",r.participants)}${box("Ordre du jour",r.odj)}${box("Compte rendu",d.description)}${box("Décisions prises",r.decisions)}${box("Actions à mener",r.actions)}
+  </div>`;
+}
+function allPieces(){
+  const out={image:[],audio:[],video:[],pdf:[]};
+  S.msgs.forEach(m=>(m.pieces||[]).forEach(p=>out[p.kind]?.push({...p,auteur:m.auteur,le:m.creeLe})));
+  return out;
+}
+function renderSubtabs(){
+  const p=allPieces(); const n=p.image.length+p.audio.length+p.video.length+p.pdf.length;
+  $("#subtabs").innerHTML = `<button class="subtab" type="button" data-sub="fil" aria-pressed="${S.sub==="fil"}">Discussion <span class="mono muted">${S.msgs.filter(m=>m.type!=="statut").length}</span></button>
+  <button class="subtab" type="button" data-sub="journal" aria-pressed="${S.sub==="journal"}">Appels et échanges <span class="mono muted">${S.msgs.filter(m=>m.type==="contact").length}</span></button>
+  <button class="subtab" type="button" data-sub="pj" aria-pressed="${S.sub==="pj"}">Photos et documents <span class="mono muted">${n}</span></button>`;
+  $("#thread").hidden = S.sub!=="fil"; $("#gallery").hidden = S.sub!=="pj"; $("#journal").hidden = S.sub!=="journal";
+  $("#composer").hidden = S.sub!=="fil";
+}
+function piecesHtml(m){
+  const ps=m.pieces||[]; if(!ps.length) return "";
+  const imgs=ps.filter(p=>p.kind==="image");
+  let h="";
+  if(imgs.length) h+=`<div class="pj-grid">${imgs.map(p=>`<button class="pj-img" type="button" data-img="${esc(p.id)}" aria-label="Agrandir la photo"><img src="${blobUrl(esc(p.id))}" alt="Photo jointe" loading="lazy"></button>`).join("")}</div>`;
+  ps.filter(p=>p.kind==="audio").forEach(p=>{ h+=`<div class="pj-audio"><span class="lbl">Message vocal ${p.duree?"· "+esc(fmtDur(p.duree)):""}</span><audio controls preload="metadata" src="${blobUrl(esc(p.id))}"></audio></div>`; });
+  ps.filter(p=>p.kind==="video").forEach(p=>{ h+=`<div class="pj-video" style="margin-top:8px"><video controls preload="metadata" src="${blobUrl(esc(p.id))}"></video></div>`; });
+  ps.filter(p=>p.kind==="pdf").forEach(p=>{ h+=`<a class="pj-file" href="${blobUrl(esc(p.id))}" target="_blank" rel="noopener">${I.doc}<span>${esc(p.nom||"Document.pdf")}</span><span class="muted mono" style="margin-left:auto;flex:none">${p.taille?esc(fmtSize(p.taille)):""}</span></a>`; });
+  return h;
+}
+function renderThread(){
+  const t=$("#thread"); if(!t) return;
+  const nearBottom = t.scrollHeight - t.scrollTop - t.clientHeight < 120;
+  if(!S.msgsLoaded){ t.innerHTML='<div class="empty"><span class="spin"></span> Chargement des messages…</div>'; return; }
+  if(!S.msgs.length){ t.innerHTML=`<div class="empty"><h3>Pas encore de message</h3><p>Écrivez le premier message, ajoutez des photos du problème ou un message vocal.</p></div>`; return; }
+  t.innerHTML = S.msgs.map(m=>{
+    if(m.type==="statut") return `<div class="sys">${esc(nameOf(m.auteur))} a passé le dossier en « ${esc(STATUTS[m.a]||m.a)} » · ${esc(fmtDT(m.creeLe))}</div>`;
+    if(m.type==="contact") return contactHtml(m);
+    if(m.type==="archive") return `<div class="sys">${esc(nameOf(m.auteur))} a archivé le dossier dans Google Drive · ${esc(fmtDT(m.creeLe))}</div>`;
+    const mine=m.auteur===S.me; const lot=lotOf(m.auteur);
+    return `<div class="msg ${mine?"mine":""}"><img class="av" src="${esc(avOf(m.auteur))}" alt="">
+      <div class="bubble"><div class="who"><b>${esc(mine?"Vous":nameOf(m.auteur))}</b>${lot?`<span class="muted">${esc(lot)}</span>`:""}<span class="muted">${esc(fmtDT(m.creeLe))}</span>${mine?`<button class="msg-del" type="button" data-delmsg="${esc(m.id)}">Supprimer</button>`:""}</div>
+      ${m.texte?`<p class="txt">${esc(m.texte)}</p>`:""}${piecesHtml(m)}</div></div>`;
+  }).join("");
+  if(nearBottom || S.scrollToEnd){ t.scrollTop=t.scrollHeight; S.scrollToEnd=false; }
+}
+function contactHtml(m){
+  const c=CANAUX[m.canal]||CANAUX.appel; const mine=m.auteur===S.me;
+  return `<div class="contact">
+    <div class="ic">${icon(c.ic)}</div>
+    <div class="contact-h"><b>${esc(c.label)}</b><span class="muted" style="font-size:.84rem">${esc(SENS[m.sens]||"")}</span><span class="when">${esc(fmtJour(m.quand))} · ${esc(fmtHeure(m.quand))}</span>${m.duree?`<span class="sub">${esc(m.duree)} min</span>`:""}</div>
+    <div><span class="sub">Avec :</span> <b style="font-size:.9rem">${esc(qui(m))}</b>${m.tel?` <span class="sub mono">${esc(m.tel)}</span>`:""}</div>
+    <div class="sub">Noté par ${esc(mine?"vous":nameOf(m.auteur))} le ${esc(fmtDT(m.creeLe))}${mine?` · <button class="msg-del" type="button" data-delmsg="${esc(m.id)}">Supprimer</button>`:""}</div>
+    ${m.texte?`<p class="txt" style="grid-column:2">${esc(m.texte)}</p>`:""}
+    ${m.suite?`<p class="suite" style="grid-column:2"><b>Suite à donner :</b> ${esc(m.suite)}</p>`:""}
+    ${(m.pieces||[]).length?`<div style="grid-column:2;min-width:0">${piecesHtml(m)}</div>`:""}
+  </div>`;
+}
+function renderJournal(){
+  const j=$("#journal"); if(!j) return;
+  const cs=S.msgs.filter(m=>m.type==="contact").sort((a,b)=>(b.quand||0)-(a.quand||0));
+  const btn = S.canWrite ? `<div><button class="btn btn-primary" type="button" data-act="contact">${icon(CANAUX.appel.ic)}<span>Noter un appel ou un échange</span></button></div>` : "";
+  if(!cs.length){ j.innerHTML=`<div class="empty"><h3>Aucun échange noté</h3><p>Notez ici chaque appel, message, e-mail ou rendez-vous lié à ce dossier : avec qui, quel jour, à quelle heure, et ce qui a été dit.</p>${btn}</div>`; return; }
+  j.innerHTML = `${btn}<div class="jwrap"><table class="jtable"><thead><tr><th>Jour et heure</th><th>Type</th><th>Avec qui</th><th>Résumé</th><th>Noté par</th></tr></thead><tbody>${
+    cs.map(m=>`<tr><td style="white-space:nowrap"><b>${esc(fmtJour(m.quand))}</b><br><span class="mono">${esc(fmtHeure(m.quand))}</span>${m.duree?` · ${esc(m.duree)} min`:""}</td>
+      <td>${esc((CANAUX[m.canal]||CANAUX.appel).label)}<br><span class="muted">${esc(SENS[m.sens]||"")}</span></td>
+      <td>${esc(qui(m))}${m.tel?`<br><span class="mono muted">${esc(m.tel)}</span>`:""}</td>
+      <td style="min-width:240px">${esc(m.texte||"")}${m.suite?`<br><span class="muted"><b>Suite :</b> ${esc(m.suite)}</span>`:""}${(m.pieces||[]).filter(p=>p.kind==="audio").map(p=>`<audio controls preload="none" src="${blobUrl(esc(p.id))}" style="display:block;width:100%;min-width:200px;margin-top:6px"></audio>`).join("")}</td>
+      <td>${esc(m.auteur===S.me?"Vous":nameOf(m.auteur))}</td></tr>`).join("")
+  }</tbody></table></div>`;
+}
+function contactForm(){
+  const pad=n=>String(n).padStart(2,"0"); const n=new Date();
+  const nowLocal=`${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}T${pad(n.getHours())}:${pad(n.getMinutes())}`;
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML=`<form class="dialog" id="cForm" novalidate>
+    <h2>Noter un appel ou un échange</h2>
+    <div class="form-grid">
+      <label><span class="lbl">Type d'échange</span><select class="field" id="cCanal">${Object.entries(CANAUX).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join("")}</select></label>
+      <label><span class="lbl">Sens</span><select class="field" id="cSens">${Object.entries(SENS).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("")}</select></label>
+      <label><span class="lbl">Jour et heure</span><input class="field" id="cQuand" type="datetime-local" value="${nowLocal}" required></label>
+      <label><span class="lbl">Durée (minutes)</span><input class="field" id="cDuree" type="number" min="0" max="600" inputmode="numeric" placeholder="Ex. 10"></label>
+      <label><span class="lbl">Avec qui (nom)</span><input class="field" id="cQui" maxlength="80" placeholder="Ex. M. Durand"></label>
+      <label><span class="lbl">Organisme</span><input class="field" id="cOrga" maxlength="80" list="orgas" placeholder="Syndic, entreprise…"><datalist id="orgas">${ORGAS.map(o=>`<option value="${esc(o)}">`).join("")}</datalist></label>
+      <label class="full"><span class="lbl">Téléphone ou adresse (facultatif)</span><input class="field" id="cTel" maxlength="80" placeholder="Ex. 28 12 34"></label>
+      <label class="full"><span class="lbl">Ce qui a été dit</span><textarea class="field" id="cTxt" maxlength="4000" placeholder="Résumé de l'échange, engagements pris, dates annoncées."></textarea></label>
+      <div class="full" style="display:grid;gap:6px"><span class="lbl">Audio de l'échange</span>
+        <div class="comp-row">${S.assets?`<button class="btn rec-btn" type="button" id="cRec" data-label="Enregistrer">${I.audio}<span>Enregistrer</span></button><button class="btn" type="button" id="cAudioBtn">${I.doc}<span>Joindre un fichier audio</span></button>`:""}${S.dict?`<button class="btn dict-btn" type="button" id="cDict" data-label="Dicter le résumé">${I.dict}<span>Dicter le résumé</span></button>`:""}</div>
+        <div class="pending" id="cAudioInfo"></div>
+        <p class="note" style="margin:0">${S.assets?"Pour enregistrer un appel en cours, prévenez votre interlocuteur et demandez son accord. Sinon, enregistrez un résumé vocal juste après l'appel.":"L'ajout d'audio est réservé aux membres invités comme Éditeurs."}</p>
+      </div>
+      <label class="full"><span class="lbl">Suite à donner (facultatif)</span><input class="field" id="cSuite" maxlength="300" placeholder="Ex. Rappeler le syndic vendredi si pas de devis"></label>
+    </div>
+    <p class="note" id="cErr" role="alert"></p>
+    <div class="dialog-actions"><button class="btn" type="button" data-close>Annuler</button><button class="btn btn-primary" type="submit">Enregistrer l'échange</button></div>
+  </form>`;
+  document.body.appendChild(ov);
+  let audioItem=null;
+  const close=()=>{ if(REC.rec) REC.rec.stop(); if(S.dictTarget==="cTxt"){ S.dictTarget=null; if(S.dict&&S.dict.active()) S.dict.stop().catch(()=>{}); } ov.remove(); };
+  ov.addEventListener("click",e=>{ if(e.target===ov||e.target.closest("[data-close]")) close(); });
+  ov.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
+  const drawAudio=()=>{ $("#cAudioInfo").innerHTML = audioItem ? `<div class="pend">${I.audio}<span>${esc(audioItem.label)}</span><span class="muted">${esc(audioItem.state||fmtSize(audioItem.file.size))}</span><button type="button" id="cAudioRm" aria-label="Retirer l'audio">✕</button></div>` : ""; };
+  const inA=document.createElement("input"); inA.type="file"; inA.accept="audio/*,.m4a,.mp3,.opus,.ogg,.wav,.aac,.amr"; inA.hidden=true; ov.appendChild(inA);
+  inA.addEventListener("change",()=>{ const f=inA.files[0]; inA.value=""; if(!f) return; if(f.size>60e6){ toast("Cet audio est trop lourd."); return; } audioItem={file:f,kind:"audio",label:f.name,state:""}; drawAudio(); });
+  ov.addEventListener("click",e=>{
+    if(e.target.closest("#cAudioBtn")){ try{ if(!S.audioCtx) S.audioCtx=new (window.AudioContext||window.webkitAudioContext)(); S.audioCtx.resume(); }catch(err){} inA.click(); }
+    else if(e.target.closest("#cAudioRm")){ audioItem=null; drawAudio(); }
+    else if(e.target.closest("#cDict")){ S.dictTarget="cTxt"; startDict(); }
+    else if(e.target.closest("#cRec")){ toggleRec(e.target.closest("#cRec"), (f,dur)=>{ audioItem={file:f,kind:"audio",label:f.name,state:"",duree:dur}; drawAudio(); }); }
+  });
+  const dos=S.cur;
+  $("#cForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const q=$("#cQuand").value; const quand=q?new Date(q).getTime():NaN;
+    if(!q||isNaN(quand)){ $("#cErr").textContent="Indiquez le jour et l'heure de l'échange."; return; }
+    const qn=$("#cQui").value.trim(), org=$("#cOrga").value.trim();
+    if(!qn&&!org){ $("#cErr").textContent="Indiquez avec qui l'échange a eu lieu (nom ou organisme)."; $("#cQui").focus(); return; }
+    const body={type:"contact", canal:$("#cCanal").value, sens:$("#cSens").value, quand, duree:$("#cDuree").value?Number($("#cDuree").value):null,
+      qui:qn, organisme:org, tel:$("#cTel").value.trim(), texte:$("#cTxt").value.trim(), suite:$("#cSuite").value.trim(), auteur:S.me, creeLe:Date.now(), pieces:[]};
+    const btn=ov.querySelector('[type="submit"]'); btn.disabled=true;
+    try{
+      if(audioItem){
+        btn.textContent="Envoi de l'audio…";
+        try{ const p=await uploadOne(audioItem); body.pieces=[p]; }
+        catch(e2){ audioItem.state=""; drawAudio(); throw Object.assign(new Error((e2&&e2.message)||"L'audio n'a pas pu être envoyé."),{audio:true}); }
+        drawAudio();
+      }
+      await dbAddMsg(dos, body);
+      const now=Date.now();
+      await dbUpdateDossier(dos, {majLe:now, dernier:{texte:`${CANAUX[body.canal].label} avec ${qui(body)}, ${fmtJour(quand)} à ${fmtHeure(quand)}`, auteur:S.me, le:now}});
+      refreshCur();
+      close(); toast("Échange enregistré"); S.scrollToEnd=true;
+    }catch(err){ btn.disabled=false; btn.textContent="Enregistrer l'échange"; $("#cErr").textContent= err&&err.audio ? err.message : "L'enregistrement a échoué. Vérifiez votre connexion et réessayez."; }
+  });
+  setTimeout(()=>$("#cQui").focus(),30);
+}
+/* ---------- impression ---------- */
+function archiveHtml(d){
+  const c=CATS[d.cat]||CATS.signalement;
+  const contacts=S.msgs.filter(m=>m.type==="contact").sort((a,b)=>(a.quand||0)-(b.quand||0));
+  const td='style="border:1px solid #999;padding:4px 6px;vertical-align:top"';
+  const pj=m=>{ const ps=m.pieces||[]; if(!ps.length) return ""; const n=k=>ps.filter(p=>p.kind===k);
+    const parts=[]; if(n("image").length) parts.push(`${n("image").length} photo(s)`); n("audio").forEach(p=>parts.push(`enregistrement audio${p.duree?" de "+fmtDur(p.duree):""}`)); n("pdf").forEach(p=>parts.push(`PDF « ${p.nom||"document"} »`)); if(n("video").length) parts.push(`${n("video").length} vidéo(s)`);
+    return `<br><i>Pièces jointes : ${esc(parts.join(", "))}</i>`; };
+  let h=`<h1>${esc(d.titre)}</h1>
+  <p><b>${esc(c.long)}</b> · Référence interne ${esc(refOf(d))} · Statut : ${esc(STATUTS[d.statut]||"Ouvert")}${d.priorite==="urgente"?" · URGENT":""}</p>
+  <p>Bâtiment : ${esc(d.batiment||"non précisé")}${d.dateRef?" · Date : "+esc(fmtJour(new Date(d.dateRef+"T12:00").getTime())):""}${d.intervenant?" · Intervenant : "+esc(d.intervenant):""}${d.reference?" · Référence : "+esc(d.reference):""}</p>
+  <p>Ouvert par ${esc(nameOf(d.auteur))} le ${esc(fmtDT(d.creeLe))}</p>
+  ${(()=>{ const br=s=>esc(s).replace(/\n/g,"<br>"); const r=d.reunion;
+    if(d.cat==="reunion"&&r) return `<p>${esc(r.type||"Réunion")}${r.heure?" · "+esc(r.heure.replace(":","h")):""}${r.lieu?" · "+esc(r.lieu):""}</p>`
+      +[["Participants",r.participants],["Ordre du jour",r.odj],["Compte rendu",d.description],["Décisions prises",r.decisions],["Actions à mener",r.actions]].filter(x=>x[1]).map(([t,v])=>`<h2>${t}</h2><p>${br(v)}</p>`).join("");
+    return d.description?`<h2>Description</h2><p>${br(d.description)}</p>`:""; })()}
+  <h2>Journal des appels et échanges (${contacts.length})</h2>`;
+  h += contacts.length ? `<table style="border-collapse:collapse;width:100%"><tr><th ${td}>Jour et heure</th><th ${td}>Type</th><th ${td}>Avec qui</th><th ${td}>Ce qui a été dit</th><th ${td}>Noté par</th></tr>${contacts.map(m=>`<tr><td ${td}>${esc(fmtJour(m.quand))}<br>${esc(fmtHeure(m.quand))}${m.duree?" · "+esc(m.duree)+" min":""}</td><td ${td}>${esc((CANAUX[m.canal]||CANAUX.appel).label)}<br>${esc(SENS[m.sens]||"")}</td><td ${td}>${esc(qui(m))}${m.tel?"<br>"+esc(m.tel):""}</td><td ${td}>${esc(m.texte||"").replace(/\n/g,"<br>")}${m.suite?"<br><b>Suite à donner :</b> "+esc(m.suite):""}${pj(m)}</td><td ${td}>${esc(nameOf(m.auteur))}</td></tr>`).join("")}</table>` : "<p>Aucun échange noté.</p>";
+  h += `<h2>Discussion et historique</h2>`;
+  const fil=S.msgs.filter(m=>m.type!=="contact"&&m.type!=="archive");
+  h += fil.length ? fil.map(m=> m.type==="statut"
+      ? `<p><i>${esc(fmtDT(m.creeLe))} : ${esc(nameOf(m.auteur))} a passé le dossier en « ${esc(STATUTS[m.a]||m.a)} »</i></p>`
+      : `<p><b>${esc(nameOf(m.auteur))}</b>${lotOf(m.auteur)?" ("+esc(lotOf(m.auteur))+")":""} · ${esc(fmtDT(m.creeLe))}<br>${esc(m.texte||"").replace(/\n/g,"<br>")}${pj(m)}</p>`).join("") : "<p>Aucun message.</p>";
+  h += `<hr><p><i>Document imprimé depuis l'application Dossiers Ile Verte par ${esc(nameOf(S.me))} le ${esc(fmtDT(Date.now()))}. Les photos, enregistrements audio et PDF restent consultables dans l'application.</i></p>`;
+  return `<html><head><meta charset="utf-8"><title>${esc(d.titre)}</title><style>body{font-family:Calibri,Arial,sans-serif;font-size:11pt;margin:18mm;color:#111}h1{font-size:17pt}h2{font-size:13pt;margin-top:18px}</style></head><body>${h}</body></html>`;
+}
+function printDossier(){
+  const d=S.dossiers.find(x=>x.id===S.cur); if(!d) return;
+  if(!S.msgsLoaded){ toast("Patientez, le dossier est en cours de chargement."); return; }
+  const w=window.open("","_blank");
+  if(!w){ toast("Autorisez les fenêtres pop-up pour ce site, puis réessayez."); return; }
+  w.document.open(); w.document.write(archiveHtml(d).replace("</body>",'<script>window.onload=function(){window.print()}<\/script></body>')); w.document.close();
+}
+function renderGallery(){
+  const g=$("#gallery"); if(!g) return;
+  const p=allPieces();
+  if(!p.image.length&&!p.audio.length&&!p.pdf.length&&!p.video.length){ g.innerHTML='<div class="empty"><h3>Aucune pièce jointe</h3><p>Les photos, audios et PDF ajoutés dans la discussion apparaîtront ici, regroupés.</p></div>'; return; }
+  let h="";
+  if(p.image.length) h+=`<section><span class="lbl">Photos · ${p.image.length}</span><div class="pj-grid">${p.image.map(x=>`<button class="pj-img" type="button" data-img="${esc(x.id)}" aria-label="Agrandir la photo"><img src="${blobUrl(esc(x.id))}" alt="Photo jointe" loading="lazy"></button>`).join("")}</div></section>`;
+  if(p.audio.length) h+=`<section><span class="lbl">Messages vocaux · ${p.audio.length}</span>${p.audio.map(x=>`<div class="pj-audio"><span class="muted" style="font-size:.82rem">${esc(nameOf(x.auteur))} · ${esc(fmtDT(x.le))}</span><audio controls preload="none" src="${blobUrl(esc(x.id))}"></audio></div>`).join("")}</section>`;
+  if(p.video.length) h+=`<section><span class="lbl">Vidéos · ${p.video.length}</span>${p.video.map(x=>`<div class="pj-video"><video controls preload="none" src="${blobUrl(esc(x.id))}"></video></div>`).join("")}</section>`;
+  if(p.pdf.length) h+=`<section><span class="lbl">Documents PDF · ${p.pdf.length}</span>${p.pdf.map(x=>`<a class="pj-file" href="${blobUrl(esc(x.id))}" target="_blank" rel="noopener">${I.doc}<span>${esc(x.nom||"Document.pdf")}</span><span class="muted mono" style="margin-left:auto;flex:none">${esc(fmtDate(x.le))}</span></a>`).join("")}</section>`;
+  g.innerHTML=h;
+}
+function renderComposer(){
+  const c=$("#composer");
+  if(!S.canWrite){ c.innerHTML='<p class="note">Vous consultez ce dossier en lecture seule. Pour écrire, demandez au propriétaire de l\'application de vous inviter comme Éditeur.</p>'; return; }
+  const canFiles=!!S.assets;
+  c.innerHTML = `
+    <div class="pending" id="pending"></div>
+    <textarea class="field" id="msgTxt" rows="2" placeholder="Écrire un message au conseil…"></textarea>
+    <div class="comp-row">
+      ${canFiles?`<button class="btn btn-ghost" type="button" data-act="photo" title="Prendre ou joindre des photos">${I.photo}<span>Photo</span></button>
+      <button class="btn btn-ghost rec-btn" type="button" data-act="rec" data-label="Enregistrer" title="Enregistrer un message vocal avec le micro">${I.audio}<span>Enregistrer</span></button>
+      <button class="btn btn-ghost" type="button" data-act="audio" title="Joindre un fichier audio">${I.doc}<span>Fichier audio</span></button>
+      <button class="btn btn-ghost" type="button" data-act="doc" title="Joindre un PDF ou une vidéo">${I.doc}<span>PDF</span></button>`:""}
+      <button class="btn btn-ghost" type="button" data-act="contact" title="Noter un appel, un message, un rendez-vous">${icon(CANAUX.appel.ic)}<span>Appel</span></button>
+      ${S.dict?`<button class="btn btn-ghost dict-btn" type="button" id="btnDict" data-act="dict" data-label="Dicter" title="Dicter le message">${I.dict}<span>Dicter</span></button>`:""}
+      <button class="btn btn-primary send" type="button" data-act="send">${I.send}<span>Envoyer</span></button>
+    </div>
+    ${canFiles?"":'<p class="note">L\'ajout de photos et d\'audios est réservé aux membres invités comme Éditeurs.</p>'}`;
+  const ta=$("#msgTxt");
+  try{ const dr=localStorage.getItem("brouillon-"+S.cur); if(dr) ta.value=dr; }catch(e){}
+  ta.addEventListener("input",()=>{ autoGrow(ta); try{ localStorage.setItem("brouillon-"+S.cur, ta.value);}catch(e){} });
+  ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); envoyer(); }});
+  renderPending();
+}
+function autoGrow(ta){ ta.style.height="auto"; ta.style.height=Math.min(180,ta.scrollHeight+2)+"px"; }
+function renderPending(){
+  const p=$("#pending"); if(!p) return;
+  p.innerHTML = S.pend.map((x,i)=>`<div class="pend">${x.kind==="image"?`<img src="${x.preview}" alt="">`:(x.kind==="audio"?I.audio:I.doc)}<span>${esc(x.label)}</span>${x.state?`<span class="muted">${esc(x.state)}</span>`:""}${S.sending?"":`<button type="button" data-rmpend="${i}" aria-label="Retirer">✕</button>`}</div>`).join("");
+}
+function renderAll(soft){
+  renderTabs(); renderList();
+  if(S.cur){ const d=S.dossiers.find(x=>x.id===S.cur); if(d && $("#dhead")){ renderHead(d); renderSubtabs(); renderThread(); renderGallery(); renderJournal(); } else renderDetail(); }
+  else if(!soft || !$("#detail").firstChild) renderDetail();
+  $("#main").dataset.view = S.cur ? "detail" : "list";
+}
+
+/* ---------- ouverture d'un dossier ---------- */
+function openDossier(id, fromHash){
+  if(S.cur===id && $("#dhead")) { $("#main").dataset.view="detail"; return; }
+  if(S.unsubMsgs){ S.unsubMsgs(); S.unsubMsgs=null; }
+  S.cur=id; S.msgs=[]; S.msgsLoaded=false; S.sub="fil"; S.pend=[]; S.scrollToEnd=true;
+  $("#detail").innerHTML="";
+  if(!fromHash){ try{ history.replaceState(null,"","#dossier-"+id); }catch(e){ location.hash="dossier-"+id; } }
+  renderAll();
+  if(!S.db) return;
+  loadMsgs(id);
+  S.unsubMsgs = subscribeMsgs(id);
+}
+function closeDossier(){
+  if(S.unsubMsgs){ S.unsubMsgs(); S.unsubMsgs=null; }
+  S.cur=null; S.msgs=[];
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+  $("#detail").innerHTML="";
+  renderAll();
+}
+
+/* ---------- pièces jointes ---------- */
+async function prepareImage(file){
+  const okType=/^image\/(jpeg|png|webp|gif)$/.test(file.type);
+  if(file.type==="image/gif" || (okType && file.size<1.2e6)) return {blob:file,type:file.type};
+  let bmp; try{ bmp=await createImageBitmap(file); }catch(e){ if(okType) return {blob:file,type:file.type}; throw new Error("Format de photo non pris en charge"); }
+  const max=2000, k=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const cv=document.createElement("canvas"); cv.width=Math.round(bmp.width*k); cv.height=Math.round(bmp.height*k);
+  cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height);
+  const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",0.85));
+  return {blob,type:"image/jpeg"};
+}
+function audioKind(file){
+  const t=(file.type||"").toLowerCase(), n=file.name.toLowerCase();
+  if(/(mp4|m4a)/.test(t) || /\.(m4a|mp4)$/.test(n)) return "mp4";
+  if(/webm/.test(t) || n.endsWith(".webm")) return "webm";
+  return "other";
+}
+async function audioDuration(blob){
+  return new Promise(res=>{ const a=new Audio(); const u=URL.createObjectURL(blob); a.preload="metadata"; a.src=u;
+    a.onloadedmetadata=()=>{ const d=isFinite(a.duration)?a.duration:0; URL.revokeObjectURL(u); res(d); }; a.onerror=()=>{URL.revokeObjectURL(u);res(0);}; setTimeout(()=>res(0),4000); });
+}
+async function transcode(file, onProg){
+  const ctx = S.audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+  S.audioCtx = ctx;
+  const buf = await ctx.decodeAudioData(await file.arrayBuffer());
+  if(buf.duration>900) throw new Error("Audio trop long (15 min maximum)");
+  if(typeof MediaRecorder==="undefined") throw new Error("Conversion audio impossible sur cet appareil");
+  const mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(m=>MediaRecorder.isTypeSupported(m));
+  if(!mime) throw new Error("Conversion audio impossible sur cet appareil");
+  await ctx.resume();
+  const dest=ctx.createMediaStreamDestination();
+  const src=ctx.createBufferSource(); src.buffer=buf; src.connect(dest);
+  const rec=new MediaRecorder(dest.stream,{mimeType:mime,audioBitsPerSecond:48000});
+  const chunks=[]; rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  const stopped=new Promise(r=>rec.onstop=r);
+  const ended=new Promise(r=>src.onended=r);
+  rec.start(1000); const t0=ctx.currentTime; src.start();
+  const iv=setInterval(()=>onProg&&onProg(Math.min(99,Math.round((ctx.currentTime-t0)/buf.duration*100))),500);
+  await ended; clearInterval(iv); rec.stop(); await stopped;
+  const type = mime.startsWith("audio/mp4") ? "audio/mp4" : "audio/webm";
+  return {blob:new Blob(chunks,{type}), type, duree:buf.duration};
+}
+function addFiles(files, kind){
+  [...files].forEach(f=>{
+    let k=kind;
+    if(kind==="doc") k = f.type==="application/pdf"||/\.pdf$/i.test(f.name) ? "pdf" : (/^video\//.test(f.type)?"video":null);
+    if(!k){ toast(`« ${f.name} » : seuls les PDF et vidéos MP4/WebM sont acceptés.`); return; }
+    if(f.size>60e6){ toast(`« ${f.name} » est trop lourd.`); return; }
+    const item={file:f,kind:k,label:f.name,state:""};
+    if(k==="image"){ try{ item.preview=URL.createObjectURL(f);}catch(e){} }
+    S.pend.push(item);
+  });
+  renderPending();
+}
+const MIME = {mp3:"audio/mpeg",m4a:"audio/mp4",mp4:"audio/mp4",aac:"audio/aac",webm:"audio/webm",wav:"audio/wav",ogg:"audio/ogg",opus:"audio/ogg"};
+async function uploadOne(item){
+  let blob=item.file, type=item.file.type, extra={};
+  if(item.kind==="image"){ const r=await prepareImage(item.file); blob=r.blob; type=r.type; }
+  else if(item.kind==="audio"){
+    const t=(item.file.type||"").toLowerCase(), n=(item.file.name||"").toLowerCase();
+    const ext=(n.match(/\.([a-z0-9]+)$/)||[])[1]||"";
+    const playable=/(mpeg|mp3|mp4|m4a|aac|webm|wav|ogg|opus)/.test(t) || (ext in MIME);
+    if(playable){ type = t || MIME[ext]; extra.duree = item.duree || await audioDuration(item.file); }
+    else { item.state="conversion…"; renderPending(); const r=await transcode(item.file,p=>{item.state=`conversion ${p} %`;renderPending();}); blob=r.blob; type=r.type; extra.duree=r.duree; }
+  }
+  else if(item.kind==="pdf") type="application/pdf";
+  else if(item.kind==="video") type = /webm/.test(type) ? "video/webm" : "video/mp4";
+  if(blob.size>50*1024*1024) throw new Error(`« ${item.label} » dépasse 50 Mo.`);
+  item.state="envoi…"; renderPending();
+  let ext=(item.label.match(/\.([a-z0-9]{1,5})$/i)||[])[1]||({image:"jpg",audio:"webm",pdf:"pdf",video:"mp4"})[item.kind];
+  if(item.kind==="image" && type==="image/jpeg") ext="jpg";
+  if(item.kind==="audio" && !item.label.match(/\.[a-z0-9]{1,5}$/i)) ext = /mp4/.test(type) ? "m4a" : "webm";
+  const path=`${S.cur||"divers"}/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext.toLowerCase()}`;
+  const {error}=await sb.storage.from("pieces").upload(path, blob, {contentType:type||"application/octet-stream", upsert:false});
+  if(error) throw new Error(/size|large|exceed/i.test(error.message||"") ? `« ${item.label} » est trop lourd.` : `Échec de l'envoi de « ${item.label} ».`);
+  item.state="✓"; renderPending();
+  return {id:path, kind:item.kind, nom:item.label, taille:blob.size, ...extra};
+}
+
+/* ---------- enregistrement au micro ---------- */
+const REC={rec:null,chunks:[],t0:0,iv:null};
+function setRecBtn(btn,on){ if(!btn||!btn.isConnected) return; btn.classList.toggle("rec-on",on); const s=btn.querySelector("span"); if(s) s.textContent = on ? "Arrêter "+fmtDur(Math.max(1,(Date.now()-REC.t0)/1000)) : (btn.dataset.label||"Enregistrer"); }
+async function toggleRec(btn, onDone){
+  if(REC.rec){ REC.rec.stop(); return; }
+  if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==="undefined"){ toast("L'enregistrement n'est pas disponible sur cet appareil : joignez un fichier audio."); return; }
+  let stream;
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ toast("Le micro est refusé : autorisez le micro pour ce site dans les réglages du navigateur."); return; }
+  const mime=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(m=>MediaRecorder.isTypeSupported(m))||"";
+  const rec=new MediaRecorder(stream, mime?{mimeType:mime}:undefined);
+  REC.rec=rec; REC.chunks=[]; REC.t0=Date.now();
+  rec.ondataavailable=e=>{ if(e.data&&e.data.size) REC.chunks.push(e.data); };
+  rec.onstop=()=>{
+    clearInterval(REC.iv); stream.getTracks().forEach(tr=>tr.stop());
+    const type=(rec.mimeType||mime||"audio/webm").split(";")[0];
+    const ext=/mp4/.test(type)?"m4a":"webm"; const dur=(Date.now()-REC.t0)/1000; const d=new Date(); const p=x=>String(x).padStart(2,"0");
+    const f=new File(REC.chunks,`vocal-${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}-${p(d.getHours())}h${p(d.getMinutes())}.${ext}`,{type});
+    REC.rec=null; setRecBtn(btn,false);
+    if(f.size) onDone(f,dur);
+  };
+  rec.start(1000); setRecBtn(btn,true);
+  REC.iv=setInterval(()=>setRecBtn(btn,true),500);
+}
+
+/* ---------- écriture ---------- */
+async function envoyer(){
+  if(S.sending||!S.db||!S.cur) return;
+  const ta=$("#msgTxt"); const texte=(ta?.value||"").trim();
+  if(!texte && !S.pend.length){ ta?.focus(); return; }
+  const id=S.cur;
+  S.sending=true; setSendBusy(true);
+  try{
+    const pieces=[];
+    for(const it of S.pend){
+      try{ pieces.push(await uploadOne(it)); }
+      catch(e){ throw new Error(e.message||`Échec de l'envoi de « ${it.label} »`); }
+    }
+    const now=Date.now();
+    await dbAddMsg(id, {texte, creeLe:now, pieces});
+    const resume = texte ? texte.slice(0,160) : resumePieces(pieces);
+    await dbUpdateDossier(id, {majLe:now, dernier:{texte:resume, auteur:S.me, le:now}});
+    refreshCur();
+    S.pend.forEach(p=>p.preview&&URL.revokeObjectURL(p.preview)); S.pend=[];
+    if(ta){ ta.value=""; autoGrow(ta); } try{ localStorage.removeItem("brouillon-"+id);}catch(e){}
+    S.scrollToEnd=true;
+  }catch(e){ toast(e.message||"Le message n'a pas pu être envoyé. Réessayez."); S.pend.forEach(p=>{ if(p.state!=="✓") p.state=""; }); }
+  S.sending=false; setSendBusy(false); renderPending();
+}
+function resumePieces(p){
+  const n=k=>p.filter(x=>x.kind===k).length; const parts=[];
+  if(n("image")) parts.push(`${n("image")} photo${n("image")>1?"s":""}`);
+  if(n("audio")) parts.push("message vocal"); if(n("pdf")) parts.push("document PDF"); if(n("video")) parts.push("vidéo");
+  return parts.join(", ");
+}
+function setSendBusy(b){ const s=document.querySelector('[data-act="send"]'); if(s){ s.disabled=b; s.querySelector("span").textContent=b?"Envoi…":"Envoyer"; } }
+async function changeStatut(v){
+  const d=S.dossiers.find(x=>x.id===S.cur); if(!d||d.statut===v) return;
+  try{
+    const now=Date.now();
+    await dbUpdateDossier(d.id, {statut:v, majLe:now});
+    await dbAddMsg(d.id, {type:"statut", de:d.statut||"ouvert", a:v, creeLe:now});
+    refreshCur();
+    toast(`Statut : ${STATUTS[v]}`);
+  }catch(e){ toast("Le statut n'a pas pu être modifié."); renderHead(d); }
+}
+
+/* ---------- formulaire dossier ---------- */
+function dossierForm(d){
+  const isNew=!d; d=d||{cat: S.f.cat!=="tous"?S.f.cat:"signalement", statut:"ouvert", priorite:"normale"};
+  const R=d.reunion||{};
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML=`<form class="dialog" id="dForm" novalidate>
+    <h2>${isNew?"Nouveau dossier":"Modifier le dossier"}</h2>
+    <div class="form-grid">
+      <label><span class="lbl">Rubrique</span><select class="field" id="fCat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${d.cat===k?"selected":""}>${esc(v.long)}</option>`).join("")}</select></label>
+      <label><span class="lbl">Bâtiment</span><select class="field" id="fBatF"><option value="">Non précisé</option>${BATS.map(b=>`<option ${d.batiment===b?"selected":""}>${esc(b)}</option>`).join("")}</select></label>
+      <label class="full"><span class="lbl">Titre</span><input class="field" id="fTitre" maxlength="140" required value="${esc(d.titre||"")}" placeholder="Ex. Fuite en toiture au-dessus du palier du 2e"></label>
+      <label><span class="lbl">Date (AG, constat, demande)</span><input class="field" id="fDate" type="date" value="${esc(d.dateRef||"")}"></label>
+      <label><span class="lbl">Priorité</span><select class="field" id="fPrio"><option value="normale">Normale</option><option value="urgente" ${d.priorite==="urgente"?"selected":""}>Urgente</option></select></label>
+      <label><span class="lbl">Intervenant</span><input class="field" id="fInt" maxlength="120" value="${esc(d.intervenant||"")}" placeholder="Syndic, entreprise, maître d'œuvre…"></label>
+      <label><span class="lbl">Référence</span><input class="field" id="fRef" maxlength="80" value="${esc(d.reference||"")}" placeholder="N° de résolution, de devis, d'ordre de service…"></label>
+      <div class="full form-grid" id="reuFields" style="padding:12px;border:1px dashed var(--line);border-radius:12px">
+        <label><span class="lbl">Type de réunion</span><select class="field" id="rType">${TYPES_REU.map(t=>`<option ${R.type===t?"selected":""}>${esc(t)}</option>`).join("")}</select></label>
+        <label><span class="lbl">Heure</span><input class="field" id="rHeure" type="time" value="${esc(R.heure||"")}"></label>
+        <label class="full"><span class="lbl">Lieu</span><input class="field" id="rLieu" maxlength="120" value="${esc(R.lieu||"")}" placeholder="Ex. Local du gardien, bureaux du syndic, visio"></label>
+        <label class="full"><span class="lbl">Participants</span><textarea class="field" id="rPart" maxlength="2000" style="min-height:60px" placeholder="Un participant par ligne, avec sa fonction. Ex. M. Durand, syndic Nouméa Immobilier">${esc(R.participants||"")}</textarea></label>
+        <label class="full"><span class="lbl">Ordre du jour</span><textarea class="field" id="rOdj" maxlength="3000" style="min-height:60px">${esc(R.odj||"")}</textarea></label>
+        <label class="full"><span class="lbl">Décisions prises</span><textarea class="field" id="rDec" maxlength="4000" style="min-height:60px">${esc(R.decisions||"")}</textarea></label>
+        <label class="full"><span class="lbl">Actions à mener (qui, quoi, pour quand)</span><textarea class="field" id="rAct" maxlength="3000" style="min-height:60px" placeholder="Ex. Présidente : relancer COSTENTIN par recommandé avant le 30/11">${esc(R.actions||"")}</textarea></label>
+      </div>
+      <label class="full"><span class="lbl" id="fDescLbl">Description</span><textarea class="field" id="fDesc" maxlength="8000" placeholder="Ce qui s'est passé, ce qui est demandé, ce qui a été décidé.">${esc(d.description||"")}</textarea></label>
+    </div>
+    <p class="note" id="fErr" role="alert"></p>
+    <div class="dialog-actions"><button class="btn" type="button" data-close>Annuler</button><button class="btn btn-primary" type="submit">${isNew?"Créer le dossier":"Enregistrer"}</button></div>
+  </form>`;
+  document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener("click",e=>{ if(e.target===ov||e.target.closest("[data-close]")) close(); });
+  ov.addEventListener("keydown",e=>{ if(e.key==="Escape") close(); });
+  const syncCat=()=>{ const reu=$("#fCat").value==="reunion"; $("#reuFields").hidden=!reu; $("#fDescLbl").textContent=reu?"Compte rendu (déroulé des échanges)":"Description";
+    $("#fTitre").placeholder = reu ? "Ex. Conseil syndical du 20 novembre · point travaux toiture" : "Ex. Fuite en toiture au-dessus du palier du 2e"; };
+  $("#fCat").addEventListener("change",syncCat); syncCat();
+  setTimeout(()=>$("#fTitre").focus(),30);
+  $("#dForm").addEventListener("submit",async e=>{
+    e.preventDefault();
+    const titre=$("#fTitre").value.trim();
+    if(!titre){ $("#fErr").textContent="Donnez un titre au dossier."; $("#fTitre").focus(); return; }
+    const body={cat:$("#fCat").value, batiment:$("#fBatF").value, titre, dateRef:$("#fDate").value, priorite:$("#fPrio").value,
+      intervenant:$("#fInt").value.trim(), reference:$("#fRef").value.trim(), description:$("#fDesc").value.trim()};
+    body.reunion = body.cat==="reunion" ? {type:$("#rType").value, heure:$("#rHeure").value, lieu:$("#rLieu").value.trim(), participants:$("#rPart").value.trim(),
+      odj:$("#rOdj").value.trim(), decisions:$("#rDec").value.trim(), actions:$("#rAct").value.trim()} : null;
+    const btn=e.submitter||ov.querySelector('[type="submit"]'); btn.disabled=true;
+    try{
+      if(isNew){
+        const row={...dossierToRow(body), statut:"ouvert", auteur:S.me, auteur_nom:nameOf(S.me)};
+        const {data,error}=await sb.from("dossiers").insert(row).select("id").single();
+        if(error) throw error;
+        await loadDossiers(); close(); openDossier(data.id); toast("Dossier créé");
+      } else {
+        await dbUpdateDossier(d.id, {...body, majLe:Date.now()});
+        await loadDossiers(); close(); toast("Dossier enregistré");
+      }
+    }catch(err){ btn.disabled=false; $("#fErr").textContent = err&&err.code==="quota_exceeded" ? "La base est pleine." : "L'enregistrement a échoué. Vérifiez votre connexion et réessayez."; }
+  });
+}
+function confirmBox(title, text, okLabel, onOk){
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML=`<div class="dialog" role="alertdialog" aria-modal="true" style="width:min(440px,100%)"><h2>${esc(title)}</h2><p class="muted" style="margin:0">${esc(text)}</p><div class="dialog-actions"><button class="btn" type="button" data-close>Annuler</button><button class="btn btn-primary" type="button" data-ok style="background:var(--danger);border-color:var(--danger);color:#fff">${esc(okLabel)}</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener("click",async e=>{ if(e.target===ov||e.target.closest("[data-close]")) ov.remove(); else if(e.target.closest("[data-ok]")){ e.target.disabled=true; await onOk(); ov.remove(); } });
+  ov.querySelector("[data-close]").focus();
+}
+function profilForm(){
+  const m=S.membres[S.me]||{};
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML=`<form class="dialog" id="pForm" style="width:min(460px,100%)"><h2>Mon profil</h2>
+   <p class="muted" style="margin:0">Le nom et le lot affichés à côté de vos messages, pour que les autres membres vous reconnaissent.</p>
+   <label style="display:grid;gap:5px"><span class="lbl">Nom affiché</span><input class="field" id="pNom" maxlength="60" value="${esc(m.nom||S.prof[S.me]?.name||"")}" placeholder="Ex. Catherine N."></label>
+   <label style="display:grid;gap:5px"><span class="lbl">Bâtiment et lot</span><input class="field" id="pLot" maxlength="60" value="${esc(m.lot||"")}" placeholder="Ex. Bât. C · lot 23"></label>
+   <label style="display:grid;gap:5px"><span class="lbl">Rôle</span><input class="field" id="pRole" maxlength="60" value="${esc(m.role||"")}" placeholder="Ex. Présidente du conseil syndical"></label>
+   <div class="dialog-actions"><button class="btn" type="button" data-close>Annuler</button><button class="btn btn-primary" type="submit">Enregistrer</button></div></form>`;
+  document.body.appendChild(ov);
+  ov.addEventListener("click",e=>{ if(e.target===ov||e.target.closest("[data-close]")) ov.remove(); });
+  $("#pForm").addEventListener("submit",async e=>{ e.preventDefault();
+    try{ const {error}=await sb.from("membres").upsert({id:S.me, email:S.email, nom:$("#pNom").value.trim(), lot:$("#pLot").value.trim(), role:$("#pRole").value.trim(), maj_le:new Date().toISOString()}); if(error) throw error; await loadMembres(); ov.remove(); toast("Profil enregistré"); }
+    catch(err){ toast("Le profil n'a pas pu être enregistré."); } });
+}
+
+/* ---------- visionneuse photo ---------- */
+function lightbox(id){
+  const imgs=allPieces().image; let i=Math.max(0,imgs.findIndex(x=>x.id===id));
+  const ov=document.createElement("div"); ov.className="lightbox"; ov.tabIndex=-1;
+  const draw=()=>{ const x=imgs[i]; ov.innerHTML=`<div class="lb-bar"><span style="font-size:.86rem">${esc(nameOf(x?.auteur))} · ${esc(fmtDT(x?.le))} · ${i+1}/${imgs.length}</span><button type="button" data-x>Fermer</button></div>
+    <div class="lb-img"><img src="${blobUrl(esc(x?.id||id))}" alt="Photo agrandie"></div>
+    <div class="lb-nav">${imgs.length>1?'<button type="button" data-p>Précédente</button><button type="button" data-n>Suivante</button>':""}<a href="${blobUrl(esc(x?.id||id))}" target="_blank" rel="noopener" style="color:#fff;align-self:center;font-size:.86rem">Ouvrir l'original</a></div>`; };
+  draw(); document.body.appendChild(ov); ov.focus();
+  ov.addEventListener("click",e=>{ if(e.target.closest("[data-x]")||e.target.classList.contains("lb-img")) ov.remove(); else if(e.target.closest("[data-p]")){i=(i-1+imgs.length)%imgs.length;draw();} else if(e.target.closest("[data-n]")){i=(i+1)%imgs.length;draw();} });
+  ov.addEventListener("keydown",e=>{ if(e.key==="Escape") ov.remove(); if(e.key==="ArrowLeft"){i=(i-1+imgs.length)%imgs.length;draw();} if(e.key==="ArrowRight"){i=(i+1)%imgs.length;draw();} });
+}
+
+/* ---------- dictée ---------- */
+function makeDictation(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return null;
+  let r=null, on=false; const H={final:[],partial:[],state:[]};
+  const emit=(k,v)=>H[k].forEach(f=>f(v));
+  return {
+    start(){ return new Promise((res,rej)=>{
+      if(on){ res(); return; }
+      r=new SR(); r.lang="fr-FR"; r.continuous=true; r.interimResults=true;
+      r.onstart=()=>{ on=true; emit("state",{state:"listening"}); res(); };
+      r.onresult=e=>{ let interim=""; for(let i=e.resultIndex;i<e.results.length;i++){ const tx=e.results[i][0].transcript; if(e.results[i].isFinal) emit("final",{text:" "+tx.trim()}); else interim+=tx; } emit("partial",{text:interim}); };
+      r.onerror=e=>{ if(e.error==="not-allowed"||e.error==="service-not-allowed") rej({code:"not_granted"}); };
+      r.onend=()=>{ on=false; emit("partial",{text:""}); emit("state",{state:"idle"}); };
+      try{ r.start(); }catch(err){ rej({code:"upstream_error"}); }
+    }); },
+    stop(){ if(r) r.stop(); return Promise.resolve(); },
+    active(){ return on; },
+    onFinal(f){ H.final.push(f); }, onPartial(f){ H.partial.push(f); }, onState(f){ H.state.push(f); }
+  };
+}
+function startDict(){
+  const d=S.dict; if(!d) return;
+  if(d.active()){ d.stop().catch(()=>{}); return; }
+  d.start({language:"fr"}).catch(e=>{
+    if(e&&e.code==="unavailable"){ d.start().catch(()=>{}); return; }
+    if(e&&e.code==="not_granted"){ toast("Le micro est refusé : autorisez-le pour ce site pour utiliser la dictée."); const b=$("#btnDict"); if(b) b.hidden=true; }
+  });
+}
+function wireDict(){
+  const d=S.dict; if(!d) return;
+  const target=()=>$("#"+(S.dictTarget||"msgTxt"));
+  d.onFinal(({text})=>{ const ta=target(); if(!ta) return; ta.value = ta.value ? ta.value+text : text.replace(/^\s+/,""); if(ta.id==="msgTxt") autoGrow(ta); ta.dispatchEvent(new Event("input")); });
+  d.onPartial(({text})=>{ const ta=target(); if(!ta) return; if(!ta.dataset.ph) ta.dataset.ph=ta.placeholder; ta.placeholder = text || ta.dataset.ph; });
+  d.onState(({state})=>{ const on=state!=="idle"; document.querySelectorAll(".dict-btn").forEach(b=>{ b.classList.toggle("rec-on",on); b.querySelector("span").textContent = on ? "Arrêter la dictée" : (b.dataset.label||"Dicter"); }); });
+}
+
+/* ---------- événements ---------- */
+document.addEventListener("click", e=>{
+  const t=e.target.closest("[data-cat],[data-open],[data-act],[data-sub],[data-img],[data-rmpend],[data-delmsg]"); if(!t) return;
+  if(t.dataset.cat){ S.f.cat=t.dataset.cat; renderTabs(); renderList(); return; }
+  if(t.dataset.open){ openDossier(t.dataset.open); return; }
+  if(t.dataset.sub){ S.sub=t.dataset.sub; renderSubtabs(); if(S.sub==="fil"){ S.scrollToEnd=true; renderThread(); } return; }
+  if(t.dataset.img){ lightbox(t.dataset.img); return; }
+  if(t.dataset.rmpend!==undefined){ const it=S.pend.splice(+t.dataset.rmpend,1)[0]; if(it?.preview) URL.revokeObjectURL(it.preview); renderPending(); return; }
+  if(t.dataset.delmsg){ const id=t.dataset.delmsg, dos=S.cur; confirmBox("Supprimer ce message ?","Le message et ses pièces jointes disparaîtront du fil pour tous les membres.","Supprimer",async()=>{ try{ const m=S.msgs.find(x=>x.id===id); const {error}=await sb.from("messages").delete().eq("id",id); if(error) throw error; const paths=(m?.pieces||[]).map(p=>p.id); if(paths.length) await sb.storage.from("pieces").remove(paths); await loadMsgs(dos); }catch(err){ toast("Suppression impossible."); } }); return; }
+  const a=t.dataset.act;
+  if(a==="new") dossierForm();
+  else if(a==="back") closeDossier();
+  else if(a==="edit") dossierForm(S.dossiers.find(x=>x.id===S.cur));
+  else if(a==="send") envoyer();
+  else if(a==="photo") $("#inPhoto").click();
+  else if(a==="doc") $("#inDoc").click();
+  else if(a==="audio"){ try{ if(!S.audioCtx){ S.audioCtx=new (window.AudioContext||window.webkitAudioContext)(); } S.audioCtx.resume(); }catch(err){} $("#inAudio").click(); }
+  else if(a==="dict"){ S.dictTarget="msgTxt"; startDict(); }
+  else if(a==="rec") toggleRec(t, (f,dur)=>{ S.pend.push({file:f,kind:"audio",label:f.name,state:"",duree:dur}); renderPending(); });
+  else if(a==="print") printDossier();
+  else if(a==="contact") contactForm();
+  else if(a==="copylink"){ const txt=`Dossier « ${S.dossiers.find(x=>x.id===S.cur)?.titre||""} » : ouvrez l'application Dossiers Ile Verte, rubrique ${CATS[S.dossiers.find(x=>x.id===S.cur)?.cat]?.long||""}.`;
+    navigator.clipboard?.writeText(location.href.split("#")[0]+"#dossier-"+S.cur).then(()=>toast("Lien du dossier copié"),()=>toast(txt)); }
+  else if(a==="delask"){ const d=S.dossiers.find(x=>x.id===S.cur); if(!d) return;
+    confirmBox("Supprimer ce dossier ?",`« ${d.titre} » et ses ${S.msgs.length} message(s) seront supprimés pour tous les membres. Cette action est définitive.`,"Supprimer définitivement",async()=>{
+      try{ const paths=S.msgs.flatMap(m=>(m.pieces||[]).map(p=>p.id)); const {error}=await sb.from("dossiers").delete().eq("id",d.id); if(error) throw error; if(paths.length) await sb.storage.from("pieces").remove(paths); closeDossier(); await loadDossiers(); toast("Dossier supprimé"); }
+      catch(err){ toast("La suppression a échoué."); } }); }
+});
+document.addEventListener("change", e=>{
+  if(e.target.id==="stSel") changeStatut(e.target.value);
+  if(e.target.id==="fBat"){ S.f.bat=e.target.value; renderList(); }
+  if(e.target.id==="fSt"){ S.f.st=e.target.value; renderTabs(); renderList(); }
+  if(e.target.id==="inPhoto"){ addFiles(e.target.files,"image"); e.target.value=""; }
+  if(e.target.id==="inAudio"){ addFiles(e.target.files,"audio"); e.target.value=""; }
+  if(e.target.id==="inDoc"){ addFiles(e.target.files,"doc"); e.target.value=""; }
+});
+$("#fQ").addEventListener("input",e=>{ S.f.q=e.target.value; renderList(); });
+$("#btnNew").addEventListener("click",()=>dossierForm());
+$("#btnMe").addEventListener("click",()=>profilForm());
+window.addEventListener("hashchange",()=>{ const m=location.hash.match(/^#dossier-(.+)$/); if(m && S.loaded) openDossier(m[1],true); });
+document.addEventListener("paste",e=>{ if(!S.cur||!S.assets||!S.canWrite) return; const fs=[...(e.clipboardData?.files||[])].filter(f=>/^image\//.test(f.type)); if(fs.length){ addFiles(fs,"image"); } });
+
+function fillSelects(){
+  $("#fBat").innerHTML = `<option value="">Tous les bâtiments</option>` + BATS.map(b=>`<option>${esc(b)}</option>`).join("");
+  $("#fSt").innerHTML = `<option value="actifs">Dossiers actifs</option><option value="">Tous les statuts</option>` + Object.entries(STATUTS).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
+}
+function setTopH(){ const h=$("#top").getBoundingClientRect().height; document.documentElement.style.setProperty("--toph", h+"px"); }
+window.addEventListener("resize", setTopH);
+
+function gate(kind, msg){
+  let g=$("#gateBox");
+  if(kind==="ok"){ if(g) g.remove(); $("#main").hidden=false; $("#tabs").hidden=false; setTopH(); return; }
+  if(!g){ g=document.createElement("div"); g.id="gateBox"; $("#top").after(g); }
+  $("#main").hidden=true; $("#tabs").hidden=true;
+  ["#btnNew","#btnMe","#btnOut","#btnAdmin"].forEach(x=>{ const b=$(x); if(b) b.hidden=true; });
+  const box=inner=>`<div style="padding:16px"><div class="gate">${inner}</div></div>`;
+  const contact=`<p class="note" style="margin:0">Besoin d'aide ? Écrivez au conseil syndical : <b style="user-select:all;overflow-wrap:anywhere">conseil.syndical.ile.verte@gmail.com</b></p>`;
+  if(kind==="loading"){ g.innerHTML=box(`<span class="lbl">Dossiers Ile Verte</span><h2>Connexion en cours…</h2><p class="muted"><span class="spin"></span> Vérification de votre accès.</p>`); return; }
+  if(kind==="config"){ g.innerHTML=box(`<span class="lbl">Configuration</span><h2>L'application n'est pas encore reliée à Supabase</h2><p class="muted" style="margin:0">Renseignez l'adresse du projet et la clé « anon » dans le fichier <b>config.js</b>, puis republiez le site. Le fichier README explique où les trouver.</p>`); return; }
+  if(kind==="denied"){
+    g.innerHTML=box(`<span class="lbl">Accès réservé</span><h2>Votre adresse n'est pas encore autorisée</h2><p class="muted" style="margin:0">Vous êtes connecté(e) avec <b>${esc(S.email||"")}</b>, mais cette adresse ne fait pas partie des membres du conseil syndical. Demandez à un administrateur de l'ajouter dans « Membres », puis rechargez la page.</p>${contact}<div class="dialog-actions"><button class="btn" type="button" id="aOut">Se déconnecter</button></div>`);
+    $("#aOut").onclick=()=>sb.auth.signOut(); return;
+  }
+  if(kind==="login"){
+    g.innerHTML=box(`<span class="lbl">Accès réservé au conseil syndical</span><h2>Connexion</h2>
+      <form id="authForm" class="auth" novalidate>
+        <label><span class="lbl">Adresse e-mail</span><input class="field" id="aEmail" type="email" autocomplete="email" required></label>
+        <label><span class="lbl">Mot de passe</span><input class="field" id="aPass" type="password" autocomplete="current-password" required></label>
+        <p class="note" id="aErr" role="alert" style="margin:0">${esc(msg||"")}</p>
+        <div class="dialog-actions" style="justify-content:space-between"><button class="btn btn-ghost" type="button" id="aForgot">Mot de passe oublié ?</button><button class="btn btn-primary" type="submit">Se connecter</button></div>
+      </form>
+      <p class="note" style="margin:0">Première connexion ? <button class="btn btn-ghost" type="button" id="aSignup" style="padding:2px 6px">Créer mon mot de passe</button></p>${contact}`);
+    $("#authForm").onsubmit=async e=>{ e.preventDefault();
+      const email=$("#aEmail").value.trim(), password=$("#aPass").value;
+      if(!email||!password){ $("#aErr").textContent="Saisissez votre adresse e-mail et votre mot de passe."; return; }
+      const b=e.submitter; if(b) b.disabled=true;
+      const {error}=await sb.auth.signInWithPassword({email,password});
+      if(b) b.disabled=false;
+      if(error) $("#aErr").textContent = /confirm/i.test(error.message||"") ? "Votre adresse n'est pas encore confirmée : ouvrez le lien reçu par e-mail." : "Adresse e-mail ou mot de passe incorrect.";
+    };
+    $("#aForgot").onclick=async()=>{ const email=$("#aEmail").value.trim();
+      if(!email){ $("#aErr").textContent="Saisissez d'abord votre adresse e-mail, puis cliquez à nouveau."; return; }
+      const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+      $("#aErr").textContent = error ? "L'envoi a échoué. Réessayez dans quelques minutes." : "Si cette adresse est enregistrée, un e-mail pour choisir un nouveau mot de passe vient de partir.";
+    };
+    $("#aSignup").onclick=()=>gate("signup");
+    setTimeout(()=>$("#aEmail")?.focus(),30); return;
+  }
+  if(kind==="signup"){
+    g.innerHTML=box(`<span class="lbl">Première connexion</span><h2>Créer mon mot de passe</h2>
+      <p class="muted" style="margin:0">Utilisez l'adresse e-mail que le conseil syndical a enregistrée pour vous.</p>
+      <form id="suForm" class="auth" novalidate>
+        <label><span class="lbl">Adresse e-mail</span><input class="field" id="sEmail" type="email" autocomplete="email" required></label>
+        <label><span class="lbl">Mot de passe (8 caractères minimum)</span><input class="field" id="sPass" type="password" autocomplete="new-password" required minlength="8"></label>
+        <label><span class="lbl">Confirmer le mot de passe</span><input class="field" id="sPass2" type="password" autocomplete="new-password" required></label>
+        <p class="note" id="sErr" role="alert" style="margin:0"></p>
+        <div class="dialog-actions"><button class="btn" type="button" id="sBack">Retour</button><button class="btn btn-primary" type="submit">Créer mon mot de passe</button></div>
+      </form>${contact}`);
+    $("#sBack").onclick=()=>gate("login");
+    $("#suForm").onsubmit=async e=>{ e.preventDefault();
+      const email=$("#sEmail").value.trim(), p1=$("#sPass").value, p2=$("#sPass2").value;
+      if(!email){ $("#sErr").textContent="Saisissez votre adresse e-mail."; return; }
+      if(p1.length<8){ $("#sErr").textContent="Le mot de passe doit faire au moins 8 caractères."; return; }
+      if(p1!==p2){ $("#sErr").textContent="Les deux mots de passe ne sont pas identiques."; return; }
+      const b=e.submitter; if(b) b.disabled=true;
+      const {data,error}=await sb.auth.signUp({email,password:p1,options:{emailRedirectTo:location.origin+location.pathname}});
+      if(b) b.disabled=false;
+      if(error){ $("#sErr").textContent = /registered|already/i.test(error.message||"") ? "Un compte existe déjà avec cette adresse : revenez à « Se connecter » ou utilisez « Mot de passe oublié »." : "La création a échoué. Réessayez dans quelques minutes."; return; }
+      if(!data.session) g.querySelector(".gate").innerHTML=`<span class="lbl">Première connexion</span><h2>Vérifiez votre boîte e-mail</h2><p class="muted" style="margin:0">Un e-mail de confirmation vient d'être envoyé à <b>${esc(email)}</b>. Ouvrez le lien qu'il contient : vous reviendrez ici, connecté(e).</p>${contact}`;
+    };
+    return;
+  }
+  if(kind==="newpass"){
+    g.innerHTML=box(`<span class="lbl">Mot de passe</span><h2>Choisir un nouveau mot de passe</h2>
+      <form id="npForm" class="auth" novalidate>
+        <label><span class="lbl">Nouveau mot de passe (8 caractères minimum)</span><input class="field" id="nPass" type="password" autocomplete="new-password" required minlength="8"></label>
+        <label><span class="lbl">Confirmer</span><input class="field" id="nPass2" type="password" autocomplete="new-password" required></label>
+        <p class="note" id="nErr" role="alert" style="margin:0"></p>
+        <div class="dialog-actions"><button class="btn btn-primary" type="submit">Enregistrer le mot de passe</button></div>
+      </form>`);
+    $("#npForm").onsubmit=async e=>{ e.preventDefault();
+      const p1=$("#nPass").value, p2=$("#nPass2").value;
+      if(p1.length<8){ $("#nErr").textContent="Le mot de passe doit faire au moins 8 caractères."; return; }
+      if(p1!==p2){ $("#nErr").textContent="Les deux mots de passe ne sont pas identiques."; return; }
+      const {error}=await sb.auth.updateUser({password:p1});
+      if(error){ $("#nErr").textContent="Le mot de passe n'a pas pu être enregistré. Le lien a peut-être expiré : redemandez-en un."; return; }
+      S.needPass=false; try{ history.replaceState(null,"",location.pathname); }catch(err){}
+      const {data:{session}}=await sb.auth.getSession(); if(session) start(session); else gate("login");
+    };
+  }
+}
+
+/* ---------- membres autorisés (administrateurs) ---------- */
+async function adminPanel(){
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML=`<div class="dialog" style="width:min(560px,100%)"><h2>Membres autorisés</h2>
+    <p class="muted" style="margin:0">Ajoutez l'adresse e-mail d'un membre du conseil syndical. Il ouvre ensuite le site et clique sur « Créer mon mot de passe ».</p>
+    <form id="admForm" class="auth" novalidate style="grid-template-columns:1fr auto;align-items:end">
+      <label><span class="lbl">Adresse e-mail</span><input class="field" id="admEmail" type="email" placeholder="prenom.nom@exemple.nc"></label>
+      <button class="btn btn-primary" type="submit">Ajouter</button>
+      <label style="display:flex;gap:8px;align-items:center;grid-column:1/-1"><input type="checkbox" id="admAdmin"> <span>Administrateur (peut ajouter ou retirer des membres)</span></label>
+    </form>
+    <p class="note" id="admErr" role="alert" style="margin:0"></p>
+    <div class="adm-list" id="admList"><span class="spin"></span></div>
+    <div class="dialog-actions"><button class="btn" type="button" data-close>Fermer</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener("click",async e=>{
+    if(e.target===ov||e.target.closest("[data-close]")){ ov.remove(); return; }
+    const rm=e.target.closest("[data-rmacc]");
+    if(rm){ const email=rm.dataset.rmacc; if(email.toLowerCase()===(S.email||"").toLowerCase()){ $("#admErr").textContent="Vous ne pouvez pas retirer votre propre adresse."; return; }
+      const {error}=await sb.from("acces").delete().eq("email",email); $("#admErr").textContent = error ? "Le retrait a échoué." : `${email} n'a plus accès.`; draw(); }
+  });
+  const draw=async()=>{
+    const {data,error}=await sb.from("acces").select("*").order("email");
+    $("#admList").innerHTML = error ? "Impossible de lire la liste." : data.map(a=>`<div class="adm-row"><span>${esc(a.email)}</span>${a.admin?'<span class="chip">Administrateur</span>':""}<button class="btn btn-ghost btn-danger" type="button" data-rmacc="${esc(a.email)}" style="margin-left:auto;padding:4px 10px">Retirer</button></div>`).join("");
+  };
+  $("#admForm").onsubmit=async e=>{ e.preventDefault();
+    const email=$("#admEmail").value.trim().toLowerCase();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("#admErr").textContent="Saisissez une adresse e-mail valide."; return; }
+    const {error}=await sb.from("acces").upsert({email, admin:$("#admAdmin").checked});
+    $("#admErr").textContent = error ? "L'ajout a échoué." : `${email} est autorisé(e). Prévenez cette personne : elle doit cliquer sur « Créer mon mot de passe ».`;
+    if(!error){ $("#admEmail").value=""; $("#admAdmin").checked=false; draw(); }
+  };
+  draw();
+}
+
+/* ---------- démarrage ---------- */
+async function start(session){
+  if(S.started || !session) return; S.started=true;
+  S.me=session.user.id; S.email=session.user.email;
+  const {data:ok, error}=await sb.rpc("est_membre");
+  if(error){ S.started=false; gate("login","La base de données ne répond pas. Vérifiez la configuration de Supabase."); return; }
+  if(!ok){ S.started=false; gate("denied"); return; }
+  const {data:adm}=await sb.rpc("est_admin");
+  S.owner=!!adm; S.editor=true; S.canWrite=true; S.db=sb; S.assets=true;
+  if(!S.dict){ S.dict=makeDictation(); if(S.dict) wireDict(); }
+  gate("ok");
+  $("#btnNew").hidden=false; $("#btnMe").hidden=false; $("#btnOut").hidden=false; $("#btnAdmin").hidden=!S.owner;
+  await loadMembres();
+  await loadDossiers();
+  const m=location.hash.match(/^#dossier-(.+)$/); if(m && S.dossiers.some(d=>d.id===m[1])) openDossier(m[1],true);
+  if(!S.chan) S.chan=sb.channel("general")
+    .on("postgres_changes",{event:"*",schema:"public",table:"dossiers"},()=>loadDossiers())
+    .on("postgres_changes",{event:"*",schema:"public",table:"membres"},()=>loadMembres())
+    .subscribe();
+  if(!(S.membres[S.me]&&S.membres[S.me].nom)) setTimeout(profilForm,500);
+}
+$("#btnOut").addEventListener("click",()=>sb&&sb.auth.signOut());
+$("#btnAdmin").addEventListener("click",()=>adminPanel());
+fillSelects(); renderTabs(); renderDetail(); setTopH();
+if(!sb){ gate("config"); }
+else {
+  gate("loading");
+  S.needPass = /type=(recovery|invite)/.test(AUTH_HASH);
+  sb.auth.onAuthStateChange((ev, session)=>{
+    if(ev==="PASSWORD_RECOVERY"){ S.needPass=true; gate("newpass"); return; }
+    if(!session){ S.started=false; S.me=null; if(S.chan){ sb.removeChannel(S.chan); S.chan=null; } closeDossierQuiet(); gate("login"); return; }
+    if(S.needPass){ gate("newpass"); return; }
+    setTimeout(()=>start(session),0);
+  });
+}
+function closeDossierQuiet(){ if(S.unsubMsgs){ S.unsubMsgs(); S.unsubMsgs=null; } S.cur=null; S.msgs=[]; S.dossiers=[]; S.loaded=false; }
+})();
+</script>
+</body>
+</html>
