@@ -398,6 +398,7 @@ body::before{background:var(--brand)}
 .agidx{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .agidx .chip{border:1px solid var(--line);background:var(--surface);padding:5px 11px;font-size:.82rem;cursor:pointer}
 .agidx .chip:hover{border-color:var(--accent);color:var(--accent)}
+.agidx .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .agsec{border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:12px;background:var(--surface);scroll-margin-top:14px}
 .agsec-h{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}
 .agsec-t{flex:1 1 240px;min-width:0;display:grid;gap:2px}
@@ -926,6 +927,8 @@ function agoPage(){
   const isAg=d=>/^assembl[ée]e g[ée]n[ée]rale/i.test(d.titre||"");
   const autres=S.dossiers.filter(d=>d.cat==="ago" && !isAg(d));
   const ags=S.dossiers.filter(d=>d.cat==="ago" && isAg(d)).sort((a,b)=>String(b.dateRef||"").localeCompare(String(a.dateRef||"")) || (b.creeLe||0)-(a.creeLe||0));
+  if(!S.agSel || (S.agSel!=="tous" && !ags.some(d=>d.id===S.agSel))) S.agSel=ags.length?ags[0].id:"tous";
+  const sel=S.agSel;
   if(!S.agoMsgs && !S.agoReq) loadAgoMsgs(ags.map(d=>d.id));
   const yr=d=>(d.dateRef||"").slice(0,4)||"Sans date";
   const ext=d=>/extraordinaire/i.test(d.titre||"");
@@ -944,9 +947,9 @@ function agoPage(){
       <span class="lbl">Conseil syndical · Résidence Ile Verte</span>
       <h2>Assemblées générales</h2>
       <p class="muted">${ags.length} assemblée(s)${span}. Synthèse du procès-verbal et documents de chaque assemblée, de la plus récente à la plus ancienne.</p>
-      ${ags.length?`<nav class="agidx" aria-label="Aller à une assemblée">${ags.map(d=>`<button type="button" class="chip" data-act="agjump" data-id="${esc(d.id)}">${esc(yr(d))}${ext(d)?" (AGE)":""}</button>`).join("")}</nav>`:""}
+      ${ags.length?`<nav class="agidx" aria-label="Choisir une assemblée">${ags.map(d=>`<button type="button" class="chip" data-act="agjump" data-id="${esc(d.id)}" aria-pressed="${sel===d.id}">${esc(yr(d))}${ext(d)?" (AGE)":""}</button>`).join("")}<button type="button" class="chip" data-act="agjump" data-id="tous" aria-pressed="${sel==="tous"}">Toutes</button></nav>`:""}
     </div>
-    ${ags.length?ags.map(d=>`<section class="agsec" id="ag-${esc(d.id)}">
+    ${ags.length?ags.filter(d=>sel==="tous"||d.id===sel).map(d=>`<section class="agsec" id="ag-${esc(d.id)}">
       <div class="agsec-h">
         <span class="ctile cat-ago" aria-hidden="true">${catIcon("ago")}</span>
         <div class="agsec-t"><h3>${esc(d.titre)}</h3><span class="muted">${d.dateRef?esc(fmtJour(new Date(d.dateRef+"T12:00").getTime())):"Date non précisée"}${ext(d)?" · Assemblée extraordinaire":""}</span></div>
@@ -1685,7 +1688,7 @@ document.addEventListener("click", e=>{
   else if(a==="yr"){ const y=t.dataset.y; if(S.openYrs.has(y)) S.openYrs.delete(y); else S.openYrs.add(y); renderList(); }
   else if(a==="flt"){ S.f.st=t.dataset.st||""; S.f.cat="tous"; const sel=$("#fSt"); if(sel) sel.value=S.f.st; renderTabs(); renderList(); $("#main").dataset.view="list"; }
   else if(a==="crjump"){ document.getElementById("cr-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
-  else if(a==="agjump"){ document.getElementById("ag-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="agjump"){ S.agSel=t.dataset.id; renderDetail(); $("#detail").scrollTop=0; }
   else if(a==="edit") dossierForm(S.dossiers.find(x=>x.id===S.cur));
   else if(a==="send") envoyer();
   else if(a==="photo") $("#inPhoto").click();
