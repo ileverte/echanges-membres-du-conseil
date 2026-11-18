@@ -455,7 +455,7 @@ const S = {
   db:null, user:null, assets:null, dict:null,
   me:null, owner:false, editor:false, canWrite:true,
   dossiers:[], loaded:false, membres:{}, prof:{},
-  f:{cat:"tous", bat:"", st:"actifs", q:""},
+  f:{cat:"tous", bat:"", st:"", q:""},
   cur:null, msgs:[], unsubMsgs:null, sub:"fil", pend:[], sending:false, audioCtx:null,
 };
 
@@ -890,7 +890,7 @@ function renderPending(){
 function renderAll(soft){
   renderTabs(); renderList();
   if(S.cur){ const d=S.dossiers.find(x=>x.id===S.cur); if(d && $("#dhead")){ renderHead(d); renderSubtabs(); renderThread(); renderGallery(); renderJournal(); } else renderDetail(); }
-  else if(!soft || !$("#detail").firstChild) renderDetail();
+  else renderDetail();
   $("#main").dataset.view = S.cur ? "detail" : "list";
 }
 
@@ -1258,7 +1258,8 @@ document.addEventListener("paste",e=>{ if(!S.cur||!S.assets||!S.canWrite) return
 
 function fillSelects(){
   $("#fBat").innerHTML = `<option value="">Tous les bâtiments</option>` + BATS.map(b=>`<option>${esc(b)}</option>`).join("");
-  $("#fSt").innerHTML = `<option value="actifs">Dossiers actifs</option><option value="">Tous les statuts</option>` + Object.entries(STATUTS).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
+  $("#fSt").innerHTML = `<option value="">Tous les dossiers (archives comprises)</option><option value="actifs">Dossiers en cours uniquement</option>` + Object.entries(STATUTS).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
+  $("#fSt").value = S.f.st;
 }
 function setTopH(){ const h=$("#top").getBoundingClientRect().height; document.documentElement.style.setProperty("--toph", h+"px"); }
 window.addEventListener("resize", setTopH);
