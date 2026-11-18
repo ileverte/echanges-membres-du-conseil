@@ -280,6 +280,15 @@ body::before{background:var(--brand)}
 .wtile:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:var(--shadow)}
 .wtile b{display:block;font-size:.92rem}
 .wtile small{color:var(--muted);font-size:.78rem}
+.yr-h{display:flex;align-items:center;gap:10px;width:calc(100% - 24px);margin:6px 12px;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.yr-h:hover{border-color:var(--accent)}
+.yr-h[aria-expanded="true"]{background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.yr-chev{width:18px;height:18px;transition:transform .15s;color:var(--accent)}
+.yr-h[aria-expanded="true"] .yr-chev{transform:rotate(90deg)}
+.yr-h span{margin-left:auto}
+.yr-body{display:grid}
+.yr-h b{font-size:1.05rem;font-variant-numeric:tabular-nums}
+.yr-h span{font-size:.78rem;color:var(--muted)}
 /* Accueil en tableau de bord */
 .tdb{width:100%;max-width:900px;margin:0 auto;padding:18px 22px 28px;display:grid;gap:12px;align-content:start}
 .tdb h2{font-size:1.35rem;margin:2px 0 0}
@@ -549,7 +558,7 @@ const S = {
   me:null, owner:false, editor:false, canWrite:true,
   dossiers:[], loaded:false, membres:{}, prof:{},
   f:{cat:"tous", bat:"", st:"", q:""},
-  cur:null, msgs:[], page:null, pdata:{}, agoMsgs:null, unsubMsgs:null, sub:"fil", pend:[], sending:false, audioCtx:null,
+  cur:null, msgs:[], openYrs:new Set(), page:null, pdata:{}, agoMsgs:null, unsubMsgs:null, sub:"fil", pend:[], sending:false, audioCtx:null,
 };
 
 /* ---------- utilitaires ---------- */
@@ -683,6 +692,17 @@ function filtered(){
     return true;
   });
 }
+const yearOf=d=>{ const y=String(d.dateRef||"").slice(0,4); return /^\d{4}$/.test(y)?y:(d.creeLe?String(new Date(d.creeLe).getFullYear()):"Sans date"); };
+const dateKey=d=>d.dateRef||(d.creeLe?new Date(d.creeLe).toISOString().slice(0,10):"");
+function byYear(list, card){
+  const sorted=list.slice().sort((a,b)=>dateKey(b).localeCompare(dateKey(a))||(b.majLe||0)-(a.majLe||0));
+  const groups=new Map(); sorted.forEach(d=>{ const y=yearOf(d); if(!groups.has(y)) groups.set(y,[]); groups.get(y).push(d); });
+  const years=[...groups.keys()].sort((a,b)=>(b==="Sans date"?-1:a==="Sans date"?1:b.localeCompare(a)));
+  const all=S.f.q.trim().length>0;
+  const cur=S.cur?S.dossiers.find(d=>d.id===S.cur):null; if(cur) S.openYrs.add(yearOf(cur));
+  return years.map(y=>{ const open=all||S.openYrs.has(y); const n=groups.get(y).length;
+    return `<button type="button" class="yr-h" data-act="yr" data-y="${esc(y)}" aria-expanded="${open}"><svg class="icon yr-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><b>${esc(y)}</b><span>${n} dossier${n>1?"s":""}</span></button>`+(open?`<div class="yr-body">${groups.get(y).map(card).join("")}</div>`:""); }).join("");
+}
 function renderList(){
   const el=$("#list");
   if(!S.loaded){ return; }
@@ -702,7 +722,7 @@ function renderList(){
     <span class="stat"><b>${act.filter(d=>d.statut==="attente").length}</b> en attente syndic</span>
     <span class="stat"><b>${S.dossiers.filter(d=>(d.majLe||0)>week).length}</b> mis à jour cette semaine</span></div>`;
   const agoBtn = S.f.cat==="ago" ? `<button type="button" class="agoall" data-act="agoall">${catTile("ago")}<span><b>Toutes les assemblées générales sur une page</b><small>Synthèses et documents, de la plus récente à la plus ancienne</small></span></button>` : "";
-  el.innerHTML = agoBtn + (q.length>=3 ? hitsHtml+(hitsHtml?`<div class="hits-h" style="padding:0 18px">Dossiers</div>`:"") : stats) + ds.map(d => {
+  el.innerHTML = agoBtn + (q.length>=3 ? hitsHtml+(hitsHtml?`<div class="hits-h" style="padding:0 18px">Dossiers</div>`:"") : "") + byYear(ds, d => {
     const c=CATS[d.cat]||CATS.signalement;
     const last=d.dernier;
     return `<button type="button" class="card" data-open="${esc(d.id)}" aria-current="${S.cur===d.id}">
@@ -712,7 +732,7 @@ function renderList(){
       ${last&&last.texte?`<p><b style="color:var(--ink);font-weight:600">${esc(nameOf(last.auteur).split(" ")[0])} :</b> ${esc(last.texte)}</p>`:(d.description?`<p>${esc(d.description)}</p>`:"")}
       <div class="card-foot">${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span>${d.batiment?`<span>${esc(d.batiment)}</span>`:""}</div>
     </button>`;
-  }).join("");
+  });
 }
 
 /* ---------- rendu : dossier ---------- */
@@ -1662,6 +1682,7 @@ document.addEventListener("click", e=>{
   else if(a==="agoall") showAgoPage();
   else if(a==="agoback"||a==="pageback"){ S.page=null; $("#detail").innerHTML=""; renderAll(); }
   else if(a==="page") showPage(t.dataset.page);
+  else if(a==="yr"){ const y=t.dataset.y; if(S.openYrs.has(y)) S.openYrs.delete(y); else S.openYrs.add(y); renderList(); }
   else if(a==="flt"){ S.f.st=t.dataset.st||""; S.f.cat="tous"; const sel=$("#fSt"); if(sel) sel.value=S.f.st; renderTabs(); renderList(); $("#main").dataset.view="list"; }
   else if(a==="crjump"){ document.getElementById("cr-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="agjump"){ document.getElementById("ag-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
