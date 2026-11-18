@@ -388,7 +388,7 @@ body::before{background:var(--brand)}
 .pg-dos{white-space:normal;min-width:0;max-width:100%}
 .pg-ech p,.pg-ech-h > *{overflow-wrap:anywhere;min-width:0}
 /* ===== Page unique des assemblées générales ===== */
-.agpage{width:100%;max-width:920px;margin:0 auto;padding:22px 24px 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start}
+.agpage{width:100%;max-width:1320px;margin:0 auto;padding:22px clamp(16px,3vw,36px) 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start}
 .agsec,.agdocs,.agpage-h{grid-template-columns:minmax(0,1fr)}
 .agsec button.pj-file{width:100%;text-align:left;cursor:pointer;font:inherit}
 @media (max-width:820px){ .agpage{padding:16px 16px 40px} .agpage-h h2{font-size:1.35rem} }
@@ -403,7 +403,9 @@ body::before{background:var(--brand)}
 .agsec-h{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}
 .agsec-t{flex:1 1 240px;min-width:0;display:grid;gap:2px}
 .agsec-t h3{font-size:1.08rem;margin:0}
-.agdocs{display:grid}
+.agdocs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:6px 10px}
+.agdocs > .lbl,.agdocs > .muted{grid-column:1/-1}
+.agdocs .pj-file{margin-top:0}
 .agdocs .pj-file{max-width:none}
 .agoall{display:flex;gap:12px;align-items:center;width:calc(100% - 32px);margin:12px 16px 4px;padding:12px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:14px;background:var(--accent-soft);text-align:left;color:var(--ink);cursor:pointer}
 .agoall span{display:grid;gap:2px}
@@ -412,7 +414,14 @@ body::before{background:var(--brand)}
 /* ===== Synthèse des procès-verbaux d'AG ===== */
 .synth{background:#F3F8F5;border:1px solid var(--line);border-left:0;border-radius:12px;padding:14px 16px;display:grid;gap:6px}
 .synth .lbl{color:var(--accent)}
-.synth-b{display:grid;grid-template-columns:minmax(0,1fr);gap:3px;font-size:.92rem;line-height:1.5}
+.synth-b{display:grid;grid-auto-flow:dense;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:10px;font-size:.97rem;line-height:1.6}
+.synth-sec{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:0}
+.synth-sec.wide{grid-column:1/-1}
+.synth-sec h4{margin:0 0 4px;font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.synth-sec p{margin:0;overflow-wrap:anywhere}
+.synth-sec ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.synth-sec li{overflow-wrap:anywhere}
+.synth-sec li::marker{color:var(--accent)}
 .synth{min-width:0;grid-template-columns:minmax(0,1fr)}
 .synth-b div{overflow-wrap:anywhere}
 .synth-h{font-weight:700;margin-top:8px;color:var(--ink)}
@@ -823,11 +832,20 @@ const PAGES={
     intro:"Constats d'huissier : synthèse, procès-verbaux obtenus ou attendus, documents et échanges qui les mentionnent."},
 };
 const normTxt=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function synthSections(lines, headOf){
+  const secs=[]; let cur=null;
+  for(const l of lines){ if(!String(l).trim()) continue; const m=headOf(l);
+    if(m){ cur={h:m[1],items:[]}; secs.push(cur); if(m[2]&&m[2].trim()) cur.items.push(m[2]); }
+    else { if(!cur){ cur={h:"",items:[]}; secs.push(cur); } cur.items.push(l); } }
+  return secs.map(x=>{
+    let its=x.items.map(t=>String(t).replace(/^\s*[-•]\s*/,"").trim()).filter(Boolean);
+    if(its.length===1 && its[0].length>260) its=its[0].split(/(?<=[.;])\s+(?=[A-ZÉÈÀÂÎÔÇ«(0-9])/).map(t=>t.replace(/\s*;$/,"").trim()).filter(Boolean);
+    const len=its.join(" ").length;
+    const body=its.length>1?`<ul>${its.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:(its[0]?`<p>${esc(its[0])}</p>`:"");
+    return `<div class="synth-sec${len>380?" wide":""}">${x.h?`<h4>${esc(x.h)}</h4>`:""}${body}</div>`; }).join("");
+}
 function synthBlock(text,label){
-  const body=String(text||"").split("\n").map(l=>{
-    const m=l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/);
-    if(m) return `<div class="synth-h">${esc(m[1])}</div>${m[2]?`<div>${esc(m[2])}</div>`:""}`;
-    return l.trim()?`<div>${esc(l)}</div>`:""; }).join("");
+  const body=synthSections(String(text||"").split("\n"), l=>l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/));
   return `<section class="synth"><span class="lbl">${esc(label)}</span><div class="synth-b">${body}</div></section>`;
 }
 function pieceLink(p,extra){
@@ -984,9 +1002,7 @@ function showPage(k){
 function agoHtml(d){
   const lines=String(d.description||"").split("\n");
   const head=lines.shift();
-  const body=lines.map(l=>{ const t=esc(l); const m=t.match(/^(Participation|Bureau|Décisions principales|Travaux et contrats|Points à retenir|Lieu et heure|Ordre du jour)\s*:\s*(.*)$/i);
-    if(m) return `<div class="synth-h">${m[1]}</div>${m[2]?`<div>${m[2]}</div>`:""}`;
-    return t.trim()?`<div>${t}</div>`:""; }).join("");
+  const body=synthSections(lines, l=>l.match(/^(Participation|Bureau|Décisions principales|Travaux et contrats|Points à retenir|Lieu et heure|Ordre du jour)\s*:\s*(.*)$/i));
   return `<section class="synth"><span class="lbl">${esc(head.replace(/\s*:\s*$/,""))}</span><div class="synth-b">${body}</div></section>`;
 }
 function reuHtml(d){
