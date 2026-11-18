@@ -359,6 +359,7 @@ body::before{background:var(--brand)}
   .tab{padding:6px 11px;font-size:.84rem}
 }
 
+.cr-hint{border:1px dashed var(--line);border-radius:12px;padding:16px 18px;color:var(--muted);background:var(--surface)}
 /* ===== Paramétrage ===== */
 .pr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .pr-row:first-of-type{border-top:0}
@@ -931,7 +932,7 @@ function pageHtml(k){
   const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":k==="marche"?"Ce qu'il faut retenir du marché":"Synthèse du dossier")
     : '<p class="muted">Pas encore de synthèse pour cette page.</p>';
   const openAnc=anc?`<button class="btn btn-ghost" type="button" data-open="${esc(anc.id)}">Ouvrir le dossier « ${esc(anc.titre)} »</button>`:"";
-  let idx="", corps="";
+  let idx="", corps="", extra="";
   if(k==="marche"){
     const GROUPES=["Pièces contractuelles signées","Versions antérieures et documents de conception","Offres et comparatifs","Suivi et documents divers"];
     const grpOf=m=>{ const x=(m.texte||"").match(/^Classement : (.+)$/m); return x?x[1].trim():"Suivi et documents divers"; };
@@ -949,19 +950,25 @@ function pageHtml(k){
     const numOf=n=>{ const x=String(n||"").match(/CR[^0-9]{0,6}(\d+)/i); return x?x[1]:""; };
     const keys=new Set(crs.map(keyOf)); const used=new Set();
     crs.sort((a,b)=>parseInt(keyOf(b))-parseInt(keyOf(a)) || keyOf(b).localeCompare(keyOf(a)));
-    const allP=ms.filter(m=>!/^Compte rendu de chantier n°/i.test(m.texte||"")).flatMap(m=>(m.pieces||[]).map(p=>({...p,le:m.creeLe})));
+    const rec=ms.find(m=>m.id==="recap-logements");
+    if(rec){ const parts=String(rec.texte||"").split("\n").slice(1).join("\n").split("\n@@\n");
+      extra=synthBlock(parts[0]||"","Termites : logements et pièces concernés")+(parts[1]?synthBlock(parts[1],"Autres réserves par logement"):""); }
+    const allP=ms.filter(m=>m.id!=="recap-logements" && !/^Compte rendu de chantier n°/i.test(m.texte||"")).flatMap(m=>(m.pieces||[]).map(p=>({...p,le:m.creeLe})));
     const docsFor=m=>{ const key=keyOf(m); const num=parseInt(key);
       const ps=allP.filter(p=>p.id===m.de || (numOf(p.nom)!=="" && +numOf(p.nom)===num && !keys.has(num+"bis") && !used.has(p.id)));
       ps.forEach(p=>used.add(p.id)); return ps; };
+    if(S.crSel && S.crSel!=="tous" && crs.length && !crs.some(m=>keyOf(m)===S.crSel)) S.crSel=null;
+    const csel=S.crSel||"";
     const secs=crs.map(m=>{ const key=keyOf(m); const lines=(m.texte||"").split("\n"); const titre=lines.shift(); const docs=docsFor(m);
+      if(csel!=="tous" && key!==csel) return "";
       return `<section class="agsec" id="cr-${esc(key)}">
         <div class="agsec-h"><span class="ctile cat-travaux" aria-hidden="true">${icon(P.ic)}</span><div class="agsec-t"><h3>${esc(titre)}</h3></div></div>
         ${synthBlock(lines.join("\n").trim(),"Synthèse du compte rendu")}
         <div class="agdocs"><span class="lbl">Compte rendu original</span>${docs.length?docs.map(p=>pieceLink(p)).join(""):'<div class="muted">PDF non retrouvé dans l\'application.</div>'}</div>
       </section>`; });
-    idx=crs.length?`<nav class="agidx" aria-label="Aller à un compte rendu">${crs.map(m=>`<button type="button" class="chip" data-act="crjump" data-id="${esc(keyOf(m))}">n°${esc(keyOf(m).replace("bis"," bis"))}</button>`).join("")}</nav>`:"";
-    const autres=allP.filter(p=>!used.has(p.id));
-    corps = !ready ? wait : (secs.join("") || '<div class="empty"><h3>Aucune synthèse de compte rendu pour l\'instant</h3></div>')
+    idx=crs.length?`<nav class="agidx" aria-label="Choisir un compte rendu">${crs.map(m=>`<button type="button" class="chip" data-act="crjump" data-id="${esc(keyOf(m))}" aria-pressed="${csel===keyOf(m)}">n°${esc(keyOf(m).replace("bis"," bis"))}</button>`).join("")}<button type="button" class="chip" data-act="crjump" data-id="tous" aria-pressed="${csel==="tous"}">Tous</button></nav>`:"";
+    const autres=csel==="tous"?allP.filter(p=>!used.has(p.id)):[];
+    corps = !ready ? wait : (!crs.length ? '<div class="empty"><h3>Aucune synthèse de compte rendu pour l\'instant</h3></div>' : (!csel ? '<div class="cr-hint">Cliquez sur un numéro de compte rendu ci-dessus pour afficher sa synthèse et le PDF original, ou sur « Tous » pour les voir tous.</div>' : secs.join("")))
       + (autres.length?`<section class="agsec"><span class="lbl">Autres documents du dossier (${autres.length})</span><div class="agdocs">${autres.sort((a,b)=>(b.le||0)-(a.le||0)).map(p=>pieceLink(p,fmtDate(p.le))).join("")}</div></section>`:"");
   } else {
     const ms=ready?pd.msgs:[];
@@ -986,6 +993,7 @@ function pageHtml(k){
       ${idx}
     </div>
     ${synth}
+    ${extra}
     ${corps}
   </div>`;
 }
@@ -1754,7 +1762,7 @@ document.addEventListener("click", e=>{
   else if(a==="copy"){ const tx=t.dataset.txt||""; try{ navigator.clipboard.writeText(tx).then(()=>toast("Lien copié"),()=>toast(tx)); }catch(err){ toast(tx); } }
   else if(a==="yr"){ const y=t.dataset.y; if(S.openYrs.has(y)) S.openYrs.delete(y); else S.openYrs.add(y); renderList(); }
   else if(a==="flt"){ S.f.st=t.dataset.st||""; S.f.cat="tous"; const sel=$("#fSt"); if(sel) sel.value=S.f.st; renderTabs(); renderList(); $("#main").dataset.view="list"; }
-  else if(a==="crjump"){ document.getElementById("cr-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="crjump"){ S.crSel=t.dataset.id; renderDetail(); const cr=document.querySelector(".agpage .agidx"); if(cr) cr.scrollIntoView({block:"start"}); }
   else if(a==="agjump"){ S.agSel=t.dataset.id; renderDetail(); $("#detail").scrollTop=0; }
   else if(a==="edit") dossierForm(S.dossiers.find(x=>x.id===S.cur));
   else if(a==="send") envoyer();
