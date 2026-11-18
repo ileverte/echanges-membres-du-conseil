@@ -280,6 +280,16 @@ body::before{background:var(--brand)}
 .wtile:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:var(--shadow)}
 .wtile b{display:block;font-size:.92rem}
 .wtile small{color:var(--muted);font-size:.78rem}
+/* Accueil compact, en haut de page */
+.welcome.welcome-top{margin:0 auto;max-width:860px;width:100%;padding:18px 22px 28px;text-align:left;display:grid;gap:8px;align-content:start}
+.wl-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;justify-content:space-between}
+.welcome-top h2{font-size:1.35rem;margin:2px 0 0}
+.wl-sub{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.welcome-top .wtiles{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:0}
+.welcome-top .wtile{padding:8px 10px;gap:10px;border-radius:12px}
+.welcome-top .wtile .ctile{width:34px;height:34px;border-radius:10px}
+.welcome-top .wtile b{font-size:.88rem;line-height:1.25}
+@media (max-width:480px){ .welcome-top .wtiles{grid-template-columns:1fr 1fr} .welcome.welcome-top{padding:14px 14px 22px} }
 .gate-wrap{display:grid;place-items:center;padding:28px 16px 40px}
 .gate-split{display:grid;grid-template-columns:1.05fr 1fr;width:min(960px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}
 .gate-art{background:var(--brand);color:var(--brand-ink);padding:34px;display:flex;flex-direction:column;gap:22px;justify-content:space-between}
@@ -315,6 +325,22 @@ body::before{background:var(--brand)}
   .tab{padding:6px 11px;font-size:.84rem}
 }
 
+/* ===== Mise à jour Gmail ===== */
+.gm-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.gm-row label{display:grid;gap:4px}
+.gm-list{display:grid;gap:8px;max-height:min(56vh,620px);overflow:auto}
+.gm-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:.9rem}
+.gm-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.gm-item.off{opacity:.62}
+.gm-chk input{width:18px;height:18px;margin-top:3px}
+.gm-body{display:grid;gap:5px;min-width:0}
+.gm-meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:.86rem}
+.gm-subj{font-weight:700;overflow-wrap:anywhere}
+.gm-snip{font-size:.86rem;overflow-wrap:anywhere}
+.gm-atts{display:grid;gap:3px;font-size:.84rem}
+.gm-att{display:flex;gap:6px;align-items:baseline;overflow-wrap:anywhere}
+.gm-att.perso{color:var(--danger)}
+.gm-dos{display:grid;gap:3px;max-width:520px}
 /* ===== Pages chantier, avocat, huissier ===== */
 .tab-page{border-style:dashed}
 .pg-ech{border-top:1px solid var(--line);padding:10px 0 2px;display:grid;gap:4px}
@@ -414,6 +440,7 @@ mark{background:#FFE9A8;color:inherit;border-radius:3px;padding:0 1px}
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
           <span class="top-new-label">Nouveau dossier</span>
         </button>
+        <button class="btn btn-ghost" id="btnGmail" type="button" hidden title="Ajouter les derniers e-mails Gmail concernant la résidence" aria-label="Mise à jour Gmail"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/><path d="M17 14v6m0 0-2.5-2.5M17 20l2.5-2.5"/></svg><span class="lab">Gmail</span></button>
         <button class="me" id="btnMe" type="button" hidden title="Mon profil"><img alt="" id="meAv"><span id="meName"></span></button>
         <button class="btn btn-ghost" id="btnAdmin" type="button" hidden title="Gérer les membres autorisés" aria-label="Membres"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M21 20c0-2.6-1.6-4.8-3.8-5.6"/></svg><span class="lab">Membres</span></button>
         <button class="btn btn-ghost" id="btnOut" type="button" hidden title="Se déconnecter" aria-label="Déconnexion"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg><span class="lab">Déconnexion</span></button>
@@ -671,12 +698,14 @@ function renderDetail(){
     S.cur=null;
     if(S.page){ host.innerHTML=pageHtml(S.page); return; }
     const tiles=Object.entries(CATS).map(([k,v])=>`<button type="button" class="wtile" data-cat="${k}">${catTile(k)}<span><b>${esc(v.long)}</b><small>${S.dossiers.filter(d=>d.cat===k).length} dossier(s)</small></span></button>`).join("");
-    host.innerHTML = `<div class="welcome">
-      <span class="lbl">Conseil syndical · Résidence Ile Verte</span>
-      <h2>Tous les dossiers de la résidence, au même endroit</h2>
-      <p class="muted">Choisissez un dossier dans la liste, ou une rubrique ci-dessous. Chaque dossier garde ses messages, appels, photos, enregistrements audio et PDF, jour par jour.</p>
-      <div class="wtiles">${tiles}${Object.entries(PAGES).map(([k,p])=>`<button type="button" class="wtile" data-act="page" data-page="${k}"><span class="ctile cat-travaux" aria-hidden="true">${icon(p.ic)}</span><span><b>${esc(p.titre)}</b><small>Page de synthèse</small></span></button>`).join("")}</div>
-      ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}
+    host.innerHTML = `<div class="welcome welcome-top">
+      <div class="wl-head"><div><span class="lbl">Conseil syndical · Résidence Ile Verte</span>
+      <h2>Tous les dossiers de la résidence</h2></div>
+      ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}</div>
+      <span class="wl-sub">Rubriques</span>
+      <div class="wtiles">${tiles}</div>
+      <span class="wl-sub">Pages de synthèse</span>
+      <div class="wtiles">${Object.entries(PAGES).map(([k,p])=>`<button type="button" class="wtile" data-act="page" data-page="${k}"><span class="ctile cat-travaux" aria-hidden="true">${icon(p.ic)}</span><span><b>${esc(p.court)}</b><small>${k==="marche"?"Pièces et clauses":k==="chantier"?"Réserves et CR":k==="avocat"?"Consultation et suivi":"Constats et PV"}</small></span></button>`).join("")}</div>
     </div>`;
     return;
   }
@@ -1344,6 +1373,170 @@ function dossierForm(d){
     }catch(err){ btn.disabled=false; $("#fErr").textContent = err&&err.code==="quota_exceeded" ? "La base est pleine." : "L'enregistrement a échoué. Vérifiez votre connexion et réessayez."; }
   });
 }
+/* ---------- Mise à jour depuis Gmail (lecture seule, import choisi par l'utilisateur) ---------- */
+const GM = {token:null, exp:0};
+const GM_QUERY = '("ile verte" OR "île verte" OR "iles vertes" OR from:noumea-immobilier.nc OR to:noumea-immobilier.nc OR cc:noumea-immobilier.nc OR from:conseil.syndical.ile.verte@gmail.com OR to:conseil.syndical.ile.verte@gmail.com OR from:cs.residence.ileverte@gmail.com OR to:cs.residence.ileverte@gmail.com OR cc:cs.residence.ileverte@gmail.com)';
+function loadGis(){ return new Promise((ok,ko)=>{ if(window.google?.accounts?.oauth2) return ok(); const sc=document.createElement("script"); sc.src="https://accounts.google.com/gsi/client"; sc.onload=()=>ok(); sc.onerror=()=>ko(new Error("Impossible de charger la connexion Google. Vérifiez votre connexion Internet.")); document.head.appendChild(sc); }); }
+async function gmToken(){
+  if(GM.token && GM.exp>Date.now()+60e3) return GM.token;
+  await loadGis();
+  return new Promise((ok,ko)=>{
+    const c=google.accounts.oauth2.initTokenClient({client_id:CFG.googleClientId, scope:"https://www.googleapis.com/auth/gmail.readonly", hint:CFG.gmailAccount||undefined,
+      callback:r=>{ if(r.error) return ko(new Error("Google a refusé l'accès : "+r.error)); GM.token=r.access_token; GM.exp=Date.now()+(+r.expires_in||3600)*1000; ok(GM.token); },
+      error_callback:e=>ko(new Error(e&&e.type==="popup_closed"?"La fenêtre Google a été fermée avant la fin.":"La fenêtre Google n'a pas pu s'ouvrir : autorisez les fenêtres pop-up pour ce site."))});
+    c.requestAccessToken({prompt:""});
+  });
+}
+async function gmGet(path){
+  const t=await gmToken();
+  const r=await fetch("https://gmail.googleapis.com/gmail/v1/users/me/"+path,{headers:{Authorization:"Bearer "+t}});
+  if(r.status===401){ GM.token=null; throw new Error("La connexion Google a expiré : relancez la recherche."); }
+  if(!r.ok) throw new Error("Gmail a répondu "+r.status+(r.status===403?" : accès refusé (vérifiez que l'API Gmail est activée et que votre adresse est utilisateur test).":"."));
+  return r.json();
+}
+const gmB64=s=>{ const b=atob(String(s).replace(/-/g,"+").replace(/_/g,"/")); const u=new Uint8Array(b.length); for(let i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u; };
+const gmHdr=(m,n)=>((m.payload&&m.payload.headers)||[]).find(h=>h.name.toLowerCase()===n)?.value||"";
+function gmParts(p,out){ out=out||{text:"",html:"",atts:[]}; if(!p) return out;
+  if(p.parts&&p.parts.length) p.parts.forEach(x=>gmParts(x,out));
+  else if(p.filename && p.body && p.body.attachmentId) out.atts.push({nom:p.filename, mime:p.mimeType||"application/octet-stream", aid:p.body.attachmentId, taille:p.body.size||0});
+  else if(p.mimeType==="text/plain" && p.body && p.body.data && !out.text) out.text=new TextDecoder().decode(gmB64(p.body.data));
+  else if(p.mimeType==="text/html" && p.body && p.body.data && !out.html) out.html=new TextDecoder().decode(gmB64(p.body.data));
+  return out; }
+function gmHtmlText(h){ const d=new DOMParser().parseFromString(h,"text/html"); d.querySelectorAll("blockquote,style,script,.gmail_quote").forEach(x=>x.remove()); d.querySelectorAll("br").forEach(b=>b.replaceWith("\n")); d.querySelectorAll("p,div,li,tr").forEach(b=>b.append("\n")); return d.body?d.body.textContent:""; }
+function gmStrip(t){ const out=[]; for(const l of String(t||"").replace(/\r/g,"").split("\n")){ const x=l.trim(); if(/^>/.test(x)) continue;
+    if(/^(Le .{3,160}a écrit\s*:?|On .{3,160}wrote:?|-{2,}\s*(Message d'origine|Original Message).*|De\s*:\s.+|From\s*:\s.+|_{10,})$/i.test(x)) break; out.push(l.replace(/\s+$/,"")); }
+  return out.join("\n").replace(/\n{3,}/g,"\n\n").trim(); }
+const gmAddr=v=>{ const m=String(v||"").match(/^\s*"?([^"<]*?)"?\s*<([^>]+)>\s*$/); return m?{nom:m[1].trim(),mail:m[2].trim().toLowerCase()}:{nom:"",mail:String(v||"").trim().toLowerCase()}; };
+function gmOrg(mail){ mail=String(mail||"").toLowerCase();
+  if(mail.endsWith("noumea-immobilier.nc")) return "Syndic Nouméa Immobilier"; if(/costentin/.test(mail)) return "Entreprise COSTENTIN";
+  if(/durema|dure-ma/.test(mail)) return "Maître d'œuvre"; if(/etrap/.test(mail)) return "ETRAP"; if(/phasme/.test(mail)) return "AMO Phasme";
+  if(/ileverte|ile\.verte/.test(mail)) return "Conseil syndical"; return ""; }
+function gmKind(nom,mime){ const e=(String(nom).toLowerCase().match(/\.([a-z0-9]+)$/)||[])[1]||"";
+  if(/^image\//.test(mime)||["jpg","jpeg","png","gif","webp","heic"].includes(e)) return "image";
+  if(/^audio\//.test(mime)||["mp3","m4a","wav","ogg","opus","aac"].includes(e)) return "audio";
+  if(/^video\//.test(mime)||["mp4","mov","webm"].includes(e)) return "video"; return "pdf"; }
+function gmSuggest(subj,txt){
+  const t=normTxt(subj+" "+String(txt).slice(0,800)); const has=id=>S.dossiers.some(d=>d.id===id)?id:"";
+  const last=cat=>(S.dossiers.filter(d=>d.cat===cat).sort((a,b)=>String(b.dateRef||"").localeCompare(String(a.dateRef||""))||(b.majLe||0)-(a.majLe||0))[0]||{}).id||"";
+  if(/huissier/.test(t)) return has("huis-constats");
+  if(/avocat|debruyne/.test(t)) return has("trx-avocat");
+  if(/compte.?rendu.{0,20}chantier|reunion de chantier|\bcr ?n ?°? ?\d/.test(t)) return has("trx-cr-chantier");
+  if(/assemblee generale|\bago\b|\bage\b|convocation/.test(t)) return last("ago");
+  if(/reunion cs|reunion du conseil|compte.?rendu.{0,20}reunion/.test(t)) return last("reunion");
+  if(/dpgf|cctp|ccap|marche de travaux|avenant/.test(t)) return has("trx-marche-costentin");
+  if(/reception|reserve|opr\b|termite|etrap|charpente|toiture/.test(t)) return has("trx-reserves-charpentes-factures")||has("trx-cr-chantier");
+  if(/budget|appel de fonds|decompte|comptes/.test(t)) return has("fin-copro");
+  return "";
+}
+function gmParse(m){
+  const from=gmAddr(gmHdr(m,"from")), to=gmHdr(m,"to").split(",").map(gmAddr).filter(x=>x.mail);
+  const out=(m.labelIds||[]).includes("SENT"); const p=gmParts(m.payload);
+  const txt=gmStrip(p.text||gmHtmlText(p.html)).slice(0,6000); const subj=gmHdr(m,"subject")||"(sans objet)";
+  const other=out?(to[0]||{nom:"",mail:""}):from;
+  const dossier=gmSuggest(subj,txt);
+  return {id:m.id, thread:m.threadId, quand:+m.internalDate, subj, txt, out, qui:other.nom||other.mail, mail:other.mail, organisme:gmOrg(other.mail), dossier, keep:!!dossier,
+    atts:p.atts.filter(a=>!/^image\d{3}\.(png|jpe?g|gif)$/i.test(a.nom)).map(a=>({...a, perso:/nyikeine/i.test(a.nom), keep:!/nyikeine/i.test(a.nom) && a.taille<45e6}))};
+}
+async function gmailDialog(){
+  const ov=document.createElement("div"); ov.className="overlay"; document.body.appendChild(ov);
+  const close=()=>ov.remove();
+  ov.addEventListener("click",e=>{ if(e.target===ov||e.target.closest("[data-close]")) close(); });
+  if(DEMO||!sb){ ov.innerHTML=`<div class="dialog"><h2>Mise à jour depuis Gmail</h2><p class="muted" style="margin:0">Indisponible dans l'aperçu : connectez-vous à l'application en ligne.</p><div class="dialog-actions"><button class="btn" type="button" data-close>Fermer</button></div></div>`; return; }
+  if(!CFG.googleClientId){ ov.innerHTML=`<div class="dialog"><h2>Mise à jour depuis Gmail</h2><p class="muted" style="margin:0">La connexion à Gmail n'est pas encore configurée : il manque l'identifiant client Google (champ <b>googleClientId</b> du fichier config.js). Le guide « Connexion Gmail » du README explique comment l'obtenir en quelques minutes.</p><div class="dialog-actions"><button class="btn" type="button" data-close>Fermer</button></div></div>`; return; }
+  let since=""; try{ const {data}=await sb.from("messages").select("quand,cree_le").like("id","gm-%").order("cree_le",{ascending:false}).limit(1); const v=data&&data[0]; since=((v&&(v.quand||v.cree_le))||"").slice(0,10); }catch(e){}
+  if(!since) since=new Date(Date.now()-30*86400e3).toISOString().slice(0,10);
+  const opts=S.dossiers.slice().sort((a,b)=>String(a.titre).localeCompare(String(b.titre),"fr")).map(d=>`<option value="${esc(d.id)}">${esc(d.titre)}</option>`).join("");
+  ov.innerHTML=`<div class="dialog" style="width:min(860px,100%)" role="dialog" aria-modal="true" aria-labelledby="gmT">
+    <h2 id="gmT">Mise à jour depuis Gmail</h2>
+    <p class="muted" style="margin:0">Recherche dans votre boîte Gmail les e-mails reçus et envoyés qui concernent la résidence (Ile Verte, syndic Nouméa Immobilier, adresses du conseil). Vous choisissez ensuite ceux à ajouter, et dans quel dossier. Rien n'est ajouté sans votre validation ; les e-mails ajoutés sont visibles par tous les membres du conseil.</p>
+    <div class="gm-row">
+      <label><span class="lbl">Depuis le</span><input class="field" type="date" id="gmSince" value="${esc(since)}"></label>
+      <label style="flex:1 1 220px"><span class="lbl">Autres mots ou adresses à inclure (facultatif)</span><input class="field" id="gmExtra" placeholder="Ex. etrap, termites, khuu"></label>
+      <button class="btn btn-primary" type="button" id="gmSearch">Rechercher dans Gmail</button>
+    </div>
+    <div id="gmList" class="gm-list"></div>
+    <p class="note" id="gmErr" role="alert" style="margin:0"></p>
+    <div class="dialog-actions"><button class="btn" type="button" data-close>Fermer</button><button class="btn btn-primary" type="button" id="gmImport" hidden>Ajouter la sélection</button></div>
+  </div>`;
+  const list=ov.querySelector("#gmList"), errEl=ov.querySelector("#gmErr"), btnImp=ov.querySelector("#gmImport");
+  const err=m=>{ errEl.textContent=m||""; };
+  let found=[];
+  function draw(){
+    if(!found.length){ list.innerHTML='<div class="empty" style="padding:18px"><h3>Aucun nouvel e-mail</h3><p>Tous les e-mails trouvés depuis cette date sont déjà dans l\'application.</p></div>'; btnImp.hidden=true; return; }
+    const nSel=found.filter(f=>f.keep&&f.dossier).length;
+    btnImp.hidden=false; btnImp.textContent=`Ajouter la sélection (${nSel})`;
+    list.innerHTML=`<div class="gm-head"><b>${found.length} nouvel(s) e-mail(s)</b><span class="muted">du plus récent au plus ancien · les e-mails sans dossier proposé sont décochés</span></div>`+found.map((f,i)=>`<div class="gm-item${f.keep?"":" off"}">
+      <label class="gm-chk"><input type="checkbox" data-gmk="${i}" ${f.keep?"checked":""} aria-label="Ajouter cet e-mail"></label>
+      <div class="gm-body">
+        <div class="gm-meta"><span class="chip ${f.out?"st-en_cours":"st-ouvert"}">${f.out?"Envoyé":"Reçu"}</span><b>${esc(fmtDT(f.quand))}</b><span class="muted">${f.out?"à":"de"} ${esc(f.qui)}${f.organisme?" · "+esc(f.organisme):""}</span></div>
+        <div class="gm-subj">${esc(f.subj)}</div>
+        <div class="gm-snip muted">${esc(f.txt.replace(/\s+/g," ").slice(0,220))}${f.txt.length>220?" …":""}</div>
+        ${f.atts.length?`<div class="gm-atts">${f.atts.map((a,j)=>`<label class="gm-att${a.perso?" perso":""}"><input type="checkbox" data-gma="${i}:${j}" ${a.keep?"checked":""}> ${esc(a.nom)} <span class="muted">${esc(fmtSize(a.taille||0))}${a.perso?" · nominatif, non coché":""}${a.taille>=45e6?" · trop lourd":""}</span></label>`).join("")}</div>`:""}
+        <label class="gm-dos"><span class="lbl">Dossier</span><select class="field" data-gmd="${i}"><option value="">Choisir un dossier…</option>${opts}</select></label>
+      </div></div>`).join("");
+    found.forEach((f,i)=>{ const sel=list.querySelector(`[data-gmd="${i}"]`); if(sel) sel.value=f.dossier||""; });
+  }
+  list.addEventListener("change",e=>{ const t=e.target;
+    if(t.dataset.gmk!==undefined){ found[+t.dataset.gmk].keep=t.checked; draw(); }
+    else if(t.dataset.gmd!==undefined){ const f=found[+t.dataset.gmd]; f.dossier=t.value; f.keep=!!t.value; found.forEach(g=>{ if(g!==f && g.thread===f.thread && !g.dossier){ g.dossier=t.value; g.keep=!!t.value; } }); draw(); }
+    else if(t.dataset.gma){ const [i,j]=t.dataset.gma.split(":").map(Number); found[i].atts[j].keep=t.checked; } });
+  async function search(){
+    err(""); btnImp.hidden=true; list.innerHTML='<div class="muted" style="padding:10px"><span class="spin"></span> Connexion à Gmail…</div>';
+    try{
+      const d=ov.querySelector("#gmSince").value; const extra=ov.querySelector("#gmExtra").value.split(/[,;]+/).map(x=>x.trim()).filter(Boolean).map(x=>/\s/.test(x)?`"${x.replace(/"/g,"")}"`:x);
+      const q=`(${GM_QUERY.slice(1,-1)}${extra.length?" OR "+extra.join(" OR "):""})${d?" after:"+d.replace(/-/g,"/"):""} -in:spam -in:trash -in:drafts`;
+      let ids=[], tok="";
+      do{ const r=await gmGet(`messages?maxResults=100&q=${encodeURIComponent(q)}${tok?"&pageToken="+tok:""}`); ids.push(...(r.messages||[]).map(m=>m.id)); tok=r.nextPageToken||""; } while(tok && ids.length<400);
+      const have=new Set();
+      for(let i=0;i<ids.length;i+=100){ const {data,error}=await sb.from("messages").select("id").in("id",ids.slice(i,i+100).map(x=>"gm-"+x)); if(error) throw new Error("Lecture de l'application impossible : "+error.message); (data||[]).forEach(r=>have.add(r.id)); }
+      const fresh=ids.filter(id=>!have.has("gm-"+id)).slice(0,150);
+      found=[];
+      for(let i=0;i<fresh.length;i+=6){
+        list.innerHTML=`<div class="muted" style="padding:10px"><span class="spin"></span> ${ids.length} e-mail(s) trouvé(s), ${fresh.length} nouveau(x) · lecture ${Math.min(i+6,fresh.length)}/${fresh.length}…</div>`;
+        const ms=await Promise.all(fresh.slice(i,i+6).map(id=>gmGet(`messages/${id}?format=full`)));
+        ms.forEach(m=>found.push(gmParse(m)));
+      }
+      found.sort((a,b)=>b.quand-a.quand);
+      found.forEach(f=>{ if(!f.dossier){ const g=found.find(x=>x.thread===f.thread&&x.dossier); if(g){ f.dossier=g.dossier; f.keep=true; } } });
+      draw();
+      if(ids.length>=400 || fresh.length>=150) err("Beaucoup d'e-mails trouvés : seuls les 150 plus récents sont affichés. Ajoutez-les puis relancez la recherche.");
+    }catch(e){ list.innerHTML=""; err(e.message||String(e)); }
+  }
+  async function doImport(){
+    const sel=found.filter(f=>f.keep&&f.dossier);
+    if(!sel.length){ err("Cochez au moins un e-mail et choisissez son dossier."); return; }
+    err(""); btnImp.disabled=true; ov.querySelector("#gmSearch").disabled=true;
+    let n=0, nf=0; const ratés=[], touched={};
+    try{
+      for(const f of sel){
+        list.innerHTML=`<div class="muted" style="padding:10px"><span class="spin"></span> Ajout ${n+1}/${sel.length} : ${esc(f.subj)}</div>`;
+        const pieces=[];
+        for(const a of f.atts.filter(a=>a.keep)){
+          try{
+            const r=await gmGet(`messages/${f.id}/attachments/${a.aid}`); const bytes=gmB64(r.data);
+            const ext=((a.nom.match(/\.([a-z0-9]{1,5})$/i)||[])[1]||"bin").toLowerCase();
+            const path=`gmail/${f.id}/${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+            const {error}=await sb.storage.from("pieces").upload(path,new Blob([bytes],{type:a.mime}),{contentType:a.mime,upsert:false});
+            if(error) throw error;
+            pieces.push({id:path,kind:gmKind(a.nom,a.mime),nom:a.nom,taille:bytes.length}); nf++;
+          }catch(e){ ratés.push(a.nom); }
+        }
+        const row={id:"gm-"+f.id, dossier_id:f.dossier, type:"contact", canal:"email", sens:f.out?"sortant":"entrant", quand:iso(f.quand), cree_le:iso(f.quand),
+          qui:f.qui||null, organisme:f.organisme||null, auteur:S.me, auteur_nom:"Importé depuis Gmail", texte:`Objet : ${f.subj}\n\n${f.txt}`.trim(), pieces};
+        const {error}=await sb.from("messages").insert(row);
+        if(error && error.code!=="23505") throw new Error(`« ${f.subj} » n'a pas pu être ajouté : ${error.message}`);
+        n++;
+        const t=touched[f.dossier]; if(!t||t.le<f.quand) touched[f.dossier]={le:f.quand, texte:`E-mail ${f.out?"envoyé à":"reçu de"} ${f.qui} : ${f.subj}`.slice(0,160)};
+      }
+      for(const [id,t] of Object.entries(touched)){ const d=S.dossiers.find(x=>x.id===id); if(!d||(d.majLe||0)<t.le){ try{ await dbUpdateDossier(id,{majLe:t.le, dernier:{texte:t.texte, auteur:S.me, le:t.le}}); }catch(e){} } }
+      await loadDossiers(); if(S.cur) loadMsgs();
+      toast(`${n} e-mail(s) ajouté(s)${nf?`, ${nf} pièce(s) jointe(s)`:""}.${ratés.length?` Pièces non récupérées : ${ratés.join(", ")}.`:""}`);
+      close();
+    }catch(e){ err(e.message||String(e)); btnImp.disabled=false; ov.querySelector("#gmSearch").disabled=false; draw(); }
+  }
+  ov.querySelector("#gmSearch").addEventListener("click",search);
+  btnImp.addEventListener("click",doImport);
+}
 function confirmBox(title, text, okLabel, onOk){
   const ov=document.createElement("div"); ov.className="overlay";
   ov.innerHTML=`<div class="dialog" role="alertdialog" aria-modal="true" style="width:min(440px,100%)"><h2>${esc(title)}</h2><p class="muted" style="margin:0">${esc(text)}</p><div class="dialog-actions"><button class="btn" type="button" data-close>Annuler</button><button class="btn btn-primary" type="button" data-ok style="background:var(--danger);border-color:var(--danger);color:#fff">${esc(okLabel)}</button></div></div>`;
@@ -1501,7 +1694,7 @@ function gate(kind, msg){
   if(kind==="ok"){ if(g) g.remove(); $("#main").hidden=false; $("#tabs").hidden=false; setTopH(); return; }
   if(!g){ g=document.createElement("div"); g.id="gateBox"; $("#top").after(g); }
   $("#main").hidden=true; $("#tabs").hidden=true;
-  ["#btnNew","#btnMe","#btnOut","#btnAdmin"].forEach(x=>{ const b=$(x); if(b) b.hidden=true; });
+  ["#btnNew","#btnMe","#btnOut","#btnAdmin","#btnGmail"].forEach(x=>{ const b=$(x); if(b) b.hidden=true; });
   const box=inner=>`<div class="gate-wrap"><div class="gate-split">
     <div class="gate-art"><div><span class="lbl">Résidence Ile Verte · Nouméa</span><h2>L'espace du conseil syndical</h2>
       <p>Dossiers travaux, assemblées générales, appels avec le syndic et comptes rendus : tout l'historique, partagé entre les membres.</p></div>
@@ -1630,7 +1823,7 @@ async function start(session){
   S.owner=!!adm; S.editor=true; S.canWrite=true; S.db=sb; S.assets=true;
   if(!S.dict){ S.dict=makeDictation(); if(S.dict) wireDict(); }
   gate("ok");
-  $("#btnNew").hidden=false; $("#btnMe").hidden=false; $("#btnOut").hidden=false; $("#btnAdmin").hidden=!S.owner;
+  $("#btnNew").hidden=false; $("#btnMe").hidden=false; $("#btnOut").hidden=false; $("#btnAdmin").hidden=!S.owner; $("#btnGmail").hidden=false;
   await loadMembres();
   await loadDossiers();
   const m=location.hash.match(/^#dossier-(.+)$/); if(m && S.dossiers.some(d=>d.id===m[1])) openDossier(m[1],true);
@@ -1641,6 +1834,7 @@ async function start(session){
   if(!(S.membres[S.me]&&S.membres[S.me].nom)) setTimeout(profilForm,500);
 }
 $("#btnOut").addEventListener("click",()=>sb&&sb.auth.signOut());
+$("#btnGmail").addEventListener("click",()=>gmailDialog());
 $("#btnAdmin").addEventListener("click",()=>adminPanel());
 fillSelects(); renderTabs(); renderDetail(); setTopH();
 if(WANT_DEMO){
