@@ -359,6 +359,14 @@ body::before{background:var(--brand)}
   .tab{padding:6px 11px;font-size:.84rem}
 }
 
+/* ===== Paramétrage ===== */
+.pr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
+.pr-row:first-of-type{border-top:0}
+.pr-t{display:grid;gap:3px;min-width:0}
+.pr-t small{color:var(--muted);font-size:.86rem;line-height:1.45}
+.pr-a{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.pr-a .btn{text-decoration:none}
+@media (max-width:640px){ .pr-row{grid-template-columns:auto minmax(0,1fr)} .pr-a{grid-column:1/-1;justify-content:flex-start} }
 /* ===== Mise à jour Gmail ===== */
 .gm-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .gm-row label{display:grid;gap:4px}
@@ -484,6 +492,7 @@ mark{background:#FFE9A8;color:inherit;border-radius:3px;padding:0 1px}
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
           <span class="top-new-label">Nouveau dossier</span>
         </button>
+        <button class="btn btn-ghost" id="btnParams" type="button" hidden title="Paramétrage : liens d&#39;import et réglages" aria-label="Paramétrage"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span class="lab">Paramétrage</span></button>
         <button class="btn btn-ghost" id="btnGmail" type="button" hidden title="Ajouter les derniers e-mails Gmail concernant la résidence" aria-label="Mise à jour Gmail"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/><path d="M17 14v6m0 0-2.5-2.5M17 20l2.5-2.5"/></svg><span class="lab">Gmail</span></button>
         <button class="me" id="btnMe" type="button" hidden title="Mon profil"><img alt="" id="meAv"><span id="meName"></span></button>
         <button class="btn btn-ghost" id="btnAdmin" type="button" hidden title="Gérer les membres autorisés" aria-label="Membres"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M21 20c0-2.6-1.6-4.8-3.8-5.6"/></svg><span class="lab">Membres</span></button>
@@ -873,7 +882,46 @@ async function loadPage(k){
   S.pdata[k]={msgs};
   if(S.page===k && !S.cur) renderDetail();
 }
+function paramsHtml(){
+  const base=location.origin+location.pathname.replace(/[^/]*$/,"");
+  const imp=base+"import.html";
+  const ref=(String(CFG.supabaseUrl||"").match(/https:\/\/([a-z0-9]+)\.supabase\.co/)||[])[1]||"";
+  const sbx=ref?"https://supabase.com/dashboard/project/"+ref:"https://supabase.com/dashboard";
+  const row=(ic,t,d,actions)=>`<div class="pr-row"><span class="ctile cat-travaux" aria-hidden="true">${icon(ic)}</span><div class="pr-t"><b>${esc(t)}</b><small>${d}</small></div><div class="pr-a">${actions}</div></div>`;
+  const lk=(href,txt,primary)=>`<a class="btn ${primary?"btn-primary":"btn-ghost"}" href="${esc(href)}" target="_blank" rel="noopener">${esc(txt)}</a>`;
+  const cp=txt=>`<button type="button" class="btn btn-ghost" data-act="copy" data-txt="${esc(txt)}">Copier le lien</button>`;
+  const IC={imp:'<path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+    code:'<path d="m8 8-4 4 4 4M16 8l4 4-4 4"/>',
+    web:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    users:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/>'};
+  const admin=S.owner;
+  const gm=!!CFG.googleClientId;
+  return `<div class="agpage">
+    <div class="agpage-h">
+      <button class="btn btn-ghost btn-icon back" type="button" data-act="pageback" aria-label="Retour à la liste">${I.back}</button>
+      <span class="lbl">Conseil syndical · Résidence Ile Verte</span>
+      <h2>Paramétrage</h2>
+      <p class="muted">Les liens pour ajouter des documents et des e-mails à l'application, et les outils qui la font fonctionner.</p>
+    </div>
+    <section class="agsec"><span class="lbl">Ajouter des documents</span>
+      ${row(IC.imp,"Page d'import des archives",`Envoie dans l'application les documents des dossiers <b>1 Magenta</b> et <b>import-archives</b>, et applique les retraits prévus.${admin?"":" Réservé aux administrateurs."}<br><span class="mono" style="font-size:.8rem;overflow-wrap:anywhere">${esc(imp)}</span>`,(admin?lk(imp,"Ouvrir la page d'import",true):"")+cp(imp))}
+      ${row(IC.mail,"Mise à jour depuis Gmail",gm?"Ajoute les derniers e-mails reçus et envoyés concernant la résidence, après votre sélection.":"Pas encore configurée : il manque l'identifiant client Google dans config.js (voir le README, partie « Connexion Gmail »).",`<button type="button" class="btn ${gm?"btn-primary":"btn-ghost"}" data-act="gmail">${gm?"Lancer la mise à jour":"Voir l'état"}</button>`)}
+    </section>
+    ${admin?`<section class="agsec"><span class="lbl">Administration</span>
+      ${row(IC.users,"Membres autorisés","Ajouter ou retirer l'adresse e-mail d'un membre du conseil.",`<button type="button" class="btn btn-ghost" data-act="members">Gérer les membres</button>`)}
+      ${row(IC.db,"Base de données Supabase","Pour exécuter un fichier SQL : <b>SQL Editor</b>, coller le contenu, puis <b>Run</b>.",lk(sbx+"/sql/new","Ouvrir l'éditeur SQL")+lk(sbx,"Tableau de bord"))}
+      ${row(IC.code,"Fichiers de l'application (GitHub)","Pour remplacer index.html, import.html ou config.js.",lk("https://github.com/ileverte/echanges-membres-du-conseil","Ouvrir GitHub"))}
+      ${row(IC.web,"Hébergement (Vercel)","Le site se met à jour tout seul une minute après chaque dépôt sur GitHub.",lk("https://vercel.com/dashboard","Ouvrir Vercel"))}
+    </section>`:""}
+    <section class="agsec"><span class="lbl">Adresse de l'application</span>
+      ${row(IC.web,"Lien à partager avec les membres",`<span class="mono" style="font-size:.8rem;overflow-wrap:anywhere">${esc(base)}</span>`,cp(base))}
+    </section>
+  </div>`;
+}
 function pageHtml(k){
+  if(k==="params") return paramsHtml();
   if(k==="ago") return agoPage();
   const P=PAGES[k]; const pd=S.pdata[k];
   if(!pd) loadPage(k);
@@ -1701,6 +1749,9 @@ document.addEventListener("click", e=>{
   else if(a==="agoall") showAgoPage();
   else if(a==="agoback"||a==="pageback"){ S.page=null; $("#detail").innerHTML=""; renderAll(); }
   else if(a==="page") showPage(t.dataset.page);
+  else if(a==="gmail") gmailDialog();
+  else if(a==="members") adminPanel();
+  else if(a==="copy"){ const tx=t.dataset.txt||""; try{ navigator.clipboard.writeText(tx).then(()=>toast("Lien copié"),()=>toast(tx)); }catch(err){ toast(tx); } }
   else if(a==="yr"){ const y=t.dataset.y; if(S.openYrs.has(y)) S.openYrs.delete(y); else S.openYrs.add(y); renderList(); }
   else if(a==="flt"){ S.f.st=t.dataset.st||""; S.f.cat="tous"; const sel=$("#fSt"); if(sel) sel.value=S.f.st; renderTabs(); renderList(); $("#main").dataset.view="list"; }
   else if(a==="crjump"){ document.getElementById("cr-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
@@ -1772,7 +1823,7 @@ function gate(kind, msg){
   if(kind==="ok"){ if(g) g.remove(); $("#main").hidden=false; $("#tabs").hidden=false; setTopH(); return; }
   if(!g){ g=document.createElement("div"); g.id="gateBox"; $("#top").after(g); }
   $("#main").hidden=true; $("#tabs").hidden=true;
-  ["#btnNew","#btnMe","#btnOut","#btnAdmin","#btnGmail"].forEach(x=>{ const b=$(x); if(b) b.hidden=true; });
+  ["#btnNew","#btnMe","#btnOut","#btnAdmin","#btnGmail","#btnParams"].forEach(x=>{ const b=$(x); if(b) b.hidden=true; });
   const box=inner=>`<div class="gate-wrap"><div class="gate-split">
     <div class="gate-art"><div><span class="lbl">Résidence Ile Verte · Nouméa</span><h2>L'espace du conseil syndical</h2>
       <p>Dossiers travaux, assemblées générales, appels avec le syndic et comptes rendus : tout l'historique, partagé entre les membres.</p></div>
@@ -1901,7 +1952,7 @@ async function start(session){
   S.owner=!!adm; S.editor=true; S.canWrite=true; S.db=sb; S.assets=true;
   if(!S.dict){ S.dict=makeDictation(); if(S.dict) wireDict(); }
   gate("ok");
-  $("#btnNew").hidden=false; $("#btnMe").hidden=false; $("#btnOut").hidden=false; $("#btnAdmin").hidden=!S.owner; $("#btnGmail").hidden=false;
+  $("#btnNew").hidden=false; $("#btnMe").hidden=false; $("#btnOut").hidden=false; $("#btnAdmin").hidden=!S.owner; $("#btnGmail").hidden=false; $("#btnParams").hidden=false;
   await loadMembres();
   await loadDossiers();
   const m=location.hash.match(/^#dossier-(.+)$/); if(m && S.dossiers.some(d=>d.id===m[1])) openDossier(m[1],true);
@@ -1913,6 +1964,7 @@ async function start(session){
 }
 $("#btnOut").addEventListener("click",()=>sb&&sb.auth.signOut());
 $("#btnGmail").addEventListener("click",()=>gmailDialog());
+$("#btnParams").addEventListener("click",()=>showPage("params"));
 $("#btnAdmin").addEventListener("click",()=>adminPanel());
 fillSelects(); renderTabs(); renderDetail(); setTopH();
 if(WANT_DEMO){
@@ -1920,7 +1972,7 @@ if(WANT_DEMO){
   sc.onload=()=>{ DEMO=window.ILE_VERTE_DEMO; S.me="demo-me"; S.email="apercu@local"; S.owner=true; S.editor=true; S.canWrite=true; S.db={}; S.assets=true;
     S.membres={"demo-me":{nom:"Catherine N.",lot:"Bât. F · 176",role:"Membre du conseil"}};
     S.dossiers=DEMO.dossiers; S.loaded=true; gate("ok");
-    ["#btnNew","#btnMe","#btnOut","#btnAdmin"].forEach(x=>{ const b=$(x); if(b) b.hidden=false; }); updateMe(); renderAll(); };
+    ["#btnNew","#btnMe","#btnOut","#btnAdmin","#btnParams"].forEach(x=>{ const b=$(x); if(b) b.hidden=false; }); updateMe(); renderAll(); };
   sc.onerror=()=>gate("config"); document.head.appendChild(sc);
 }
 else if(!sb){ gate("config"); }
