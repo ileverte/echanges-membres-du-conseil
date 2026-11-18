@@ -280,6 +280,31 @@ body::before{background:var(--brand)}
 .wtile:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:var(--shadow)}
 .wtile b{display:block;font-size:.92rem}
 .wtile small{color:var(--muted);font-size:.78rem}
+/* Accueil en tableau de bord */
+.tdb{width:100%;max-width:900px;margin:0 auto;padding:18px 22px 28px;display:grid;gap:12px;align-content:start}
+.tdb h2{font-size:1.35rem;margin:2px 0 0}
+.tdb-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tdb-stat{display:grid;gap:2px;text-align:left;border:1px solid transparent;border-radius:12px;padding:10px 12px;cursor:pointer;font:inherit}
+.tdb-stat b{font-size:1.5rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.tdb-stat span{font-size:.8rem}
+.tdb-stat:hover{border-color:var(--line)}
+.s-acc{background:#E3F1E9;color:#17694A}.s-dan{background:#FBE6E4;color:#A3261E}.s-war{background:#FBF0DC;color:#8A5300}.s-neu{background:var(--surface-2);color:var(--ink)}
+.tdb-box{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:10px 12px;display:grid;gap:4px}
+.tdb-h{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:2px}
+.tdb-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:8px 2px;font:inherit;color:var(--ink);cursor:pointer}
+.tdb-row:first-of-type{border-top:0}
+.tdb-row:hover{background:var(--surface-2)}
+.tdb-row .ctile{width:32px;height:32px;border-radius:9px}
+.tdb-t{display:grid;gap:1px;min-width:0}
+.tdb-t b{font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tdb-t small{color:var(--muted);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tdb-m{display:flex;gap:6px;align-items:center;font-size:.78rem;white-space:nowrap}
+.tdb-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tdb-pills .wl-sub{margin:0 4px 0 0;min-width:84px}
+.tdb-pill{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font:inherit;font-size:.85rem;color:var(--ink);cursor:pointer}
+.tdb-pill .icon{width:15px;height:15px}
+.tdb-pill:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:640px){ .tdb{padding:14px 14px 22px} .tdb-stats{grid-template-columns:1fr 1fr} .tdb-m .muted{display:none} .tdb-pills .wl-sub{min-width:100%} }
 /* Accueil compact, en haut de page */
 .welcome.welcome-top{margin:0 auto;max-width:860px;width:100%;padding:18px 22px 28px;text-align:left;display:grid;gap:8px;align-content:start}
 .wl-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;justify-content:space-between}
@@ -698,14 +723,26 @@ function renderDetail(){
     S.cur=null;
     if(S.page){ host.innerHTML=pageHtml(S.page); return; }
     const tiles=Object.entries(CATS).map(([k,v])=>`<button type="button" class="wtile" data-cat="${k}">${catTile(k)}<span><b>${esc(v.long)}</b><small>${S.dossiers.filter(d=>d.cat===k).length} dossier(s)</small></span></button>`).join("");
-    host.innerHTML = `<div class="welcome welcome-top">
-      <div class="wl-head"><div><span class="lbl">Conseil syndical · Résidence Ile Verte</span>
-      <h2>Tous les dossiers de la résidence</h2></div>
+    const actifs=S.dossiers.filter(d=>!["resolu","clos"].includes(d.statut));
+    const urg=actifs.filter(d=>d.priorite==="urgente"), att=actifs.filter(d=>d.statut==="attente");
+    const week=Date.now()-7*86400e3, recents=S.dossiers.filter(d=>(d.majLe||0)>week);
+    const rank=d=>(d.priorite==="urgente"?2:0)+(d.statut==="attente"?1:0);
+    const suivre=actifs.slice().sort((a,b)=>rank(b)-rank(a)||(b.majLe||0)-(a.majLe||0)).slice(0,7);
+    const stat=(n,l,cls,act)=>`<button type="button" class="tdb-stat ${cls}" ${act}><b>${n}</b><span>${esc(l)}</span></button>`;
+    host.innerHTML = `<div class="tdb">
+      <div class="wl-head"><div><span class="lbl">Conseil syndical · Résidence Ile Verte</span><h2>Tableau de bord</h2></div>
       ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}</div>
-      <span class="wl-sub">Rubriques</span>
-      <div class="wtiles">${tiles}</div>
-      <span class="wl-sub">Pages de synthèse</span>
-      <div class="wtiles">${Object.entries(PAGES).map(([k,p])=>`<button type="button" class="wtile" data-act="page" data-page="${k}"><span class="ctile cat-travaux" aria-hidden="true">${icon(p.ic)}</span><span><b>${esc(p.court)}</b><small>${k==="marche"?"Pièces et clauses":k==="chantier"?"Réserves et CR":k==="avocat"?"Consultation et suivi":"Constats et PV"}</small></span></button>`).join("")}</div>
+      <div class="tdb-stats">
+        ${stat(actifs.length,"dossiers actifs","s-acc",'data-act="flt" data-st="actifs"')}
+        ${stat(urg.length,"urgents","s-dan",'data-act="flt" data-st="actifs"')}
+        ${stat(att.length,"en attente syndic","s-war",'data-act="flt" data-st="attente"')}
+        ${stat(recents.length,"mis à jour cette semaine","s-neu",'data-act="flt" data-st=""')}
+      </div>
+      <div class="tdb-pills"><span class="wl-sub">Rubriques</span>${Object.entries(CATS).map(([k,v])=>`<button type="button" class="tdb-pill" data-cat="${k}">${catIcon(k)}${esc(v.label)} <span class="muted">${S.dossiers.filter(d=>d.cat===k).length}</span></button>`).join("")}</div>
+      <div class="tdb-pills"><span class="wl-sub">Synthèses</span>${Object.entries(PAGES).map(([k,p])=>`<button type="button" class="tdb-pill" data-act="page" data-page="${k}">${icon(p.ic)}${esc(p.court)}</button>`).join("")}</div>
+      <section class="tdb-box"><div class="tdb-h"><span class="wl-sub">À suivre</span><span class="muted" style="font-size:.8rem">urgents et en attente d'abord, puis les plus récents</span></div>
+        ${S.loaded?(suivre.length?suivre.map(d=>`<button type="button" class="tdb-row" data-open="${esc(d.id)}">${catTile(d.cat)}<span class="tdb-t"><b>${esc(d.titre)}</b><small>${esc(String(d.dernier&&d.dernier.texte?d.dernier.texte:(d.description||"").split("\n")[0]).slice(0,120))}</small></span><span class="tdb-m">${d.priorite==="urgente"?'<span class="chip urgent">Urgent</span>':""}<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span><span class="muted">${esc(fmtRel(d.majLe))}</span></span></button>`).join(""):'<p class="muted" style="margin:0">Aucun dossier actif.</p>'):'<p class="muted" style="margin:0"><span class="spin"></span> Chargement…</p>'}
+      </section>
     </div>`;
     return;
   }
@@ -1625,6 +1662,7 @@ document.addEventListener("click", e=>{
   else if(a==="agoall") showAgoPage();
   else if(a==="agoback"||a==="pageback"){ S.page=null; $("#detail").innerHTML=""; renderAll(); }
   else if(a==="page") showPage(t.dataset.page);
+  else if(a==="flt"){ S.f.st=t.dataset.st||""; S.f.cat="tous"; const sel=$("#fSt"); if(sel) sel.value=S.f.st; renderTabs(); renderList(); $("#main").dataset.view="list"; }
   else if(a==="crjump"){ document.getElementById("cr-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="agjump"){ document.getElementById("ag-"+t.dataset.id)?.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="edit") dossierForm(S.dossiers.find(x=>x.id===S.cur));
