@@ -428,6 +428,9 @@ details.synth-sec.sec-fold{padding:0}
 .pr-a .btn{text-decoration:none}
 @media (max-width:640px){ .pr-row{grid-template-columns:auto minmax(0,1fr)} .pr-a{grid-column:1/-1;justify-content:flex-start} }
 /* ===== Mise à jour Gmail ===== */
+.gm-contacts{border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface-2)}
+.gm-contacts summary{cursor:pointer;font-weight:600;font-size:.9rem}
+.gm-contacts textarea{min-height:110px;font-family:ui-monospace,Consolas,monospace;font-size:.85rem}
 .gm-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .gm-row label{display:grid;gap:4px}
 .gm-list{display:grid;gap:8px;max-height:min(56vh,620px);overflow:auto}
@@ -1655,6 +1658,9 @@ async function gmailDialog(){
   if(!CFG.googleClientId){ ov.innerHTML=`<div class="dialog"><h2>Mise à jour depuis Gmail</h2><p class="muted" style="margin:0">La connexion à Gmail n'est pas encore configurée : il manque l'identifiant client Google (champ <b>googleClientId</b> du fichier config.js). Le guide « Connexion Gmail » du README explique comment l'obtenir en quelques minutes.</p><div class="dialog-actions"><button class="btn" type="button" data-close>Fermer</button></div></div>`; return; }
   let since=""; try{ const {data}=await sb.from("messages").select("quand,cree_le").like("id","gm-%").order("cree_le",{ascending:false}).limit(1); const v=data&&data[0]; since=((v&&(v.quand||v.cree_le))||"").slice(0,10); }catch(e){}
   if(!since) since=new Date(Date.now()-30*86400e3).toISOString().slice(0,10);
+  let contacts=""; try{ contacts=localStorage.getItem("iv-gmail-contacts")||""; }catch(e){}
+  if(!contacts){ const set=new Set(); try{ const {data}=await sb.from("acces").select("email"); (data||[]).forEach(r=>r.email&&set.add(String(r.email).toLowerCase())); }catch(e){}
+    Object.values(S.membres||{}).forEach(m=>m&&m.email&&set.add(String(m.email).toLowerCase())); contacts=[...set].join("\n"); }
   const opts=S.dossiers.slice().sort((a,b)=>String(a.titre).localeCompare(String(b.titre),"fr")).map(d=>`<option value="${esc(d.id)}">${esc(d.titre)}</option>`).join("");
   ov.innerHTML=`<div class="dialog" style="width:min(860px,100%)" role="dialog" aria-modal="true" aria-labelledby="gmT">
     <h2 id="gmT">Mise à jour depuis Gmail</h2>
@@ -1664,6 +1670,10 @@ async function gmailDialog(){
       <label style="flex:1 1 220px"><span class="lbl">Autres mots ou adresses à inclure (facultatif)</span><input class="field" id="gmExtra" placeholder="Ex. etrap, termites, khuu"></label>
       <button class="btn btn-primary" type="button" id="gmSearch">Rechercher dans Gmail</button>
     </div>
+    <details class="gm-contacts"${contacts?"":" open"}><summary>Adresses suivies : membres du conseil et autres correspondants (${contacts?contacts.split(/[\s,;]+/).filter(x=>x.includes("@")).length:0})</summary>
+      <p class="muted" style="margin:6px 0">Tous les e-mails reçus de ces adresses ou envoyés à ces adresses (en destinataire ou en copie) sont recherchés, même sans le mot « Ile Verte ». Le syndic Nouméa Immobilier (dont M. Khuu) et les adresses du conseil sont toujours inclus. Une adresse par ligne. Cette liste reste enregistrée dans ce navigateur uniquement.</p>
+      <textarea class="field" id="gmContacts" rows="5" placeholder="prenom.nom@exemple.nc">${esc(contacts)}</textarea>
+    </details>
     <div id="gmList" class="gm-list"></div>
     <p class="note" id="gmErr" role="alert" style="margin:0"></p>
     <div class="dialog-actions"><button class="btn" type="button" data-close>Fermer</button><button class="btn btn-primary" type="button" id="gmImport" hidden>Ajouter la sélection</button></div>
@@ -1694,7 +1704,10 @@ async function gmailDialog(){
     err(""); btnImp.hidden=true; list.innerHTML='<div class="muted" style="padding:10px"><span class="spin"></span> Connexion à Gmail…</div>';
     try{
       const d=ov.querySelector("#gmSince").value; const extra=ov.querySelector("#gmExtra").value.split(/[,;]+/).map(x=>x.trim()).filter(Boolean).map(x=>/\s/.test(x)?`"${x.replace(/"/g,"")}"`:x);
-      const q=`(${GM_QUERY.slice(1,-1)}${extra.length?" OR "+extra.join(" OR "):""})${d?" after:"+d.replace(/-/g,"/"):""} -in:spam -in:trash -in:drafts`;
+      const ctxt=ov.querySelector("#gmContacts").value; try{ localStorage.setItem("iv-gmail-contacts",ctxt.trim()); }catch(e){}
+      const mails=[...new Set(ctxt.split(/[\s,;]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/.test(x)))];
+      const parts=mails.map(a=>`from:${a} OR to:${a} OR cc:${a}`);
+      const q=`(${GM_QUERY.slice(1,-1)}${parts.length?" OR "+parts.join(" OR "):""}${extra.length?" OR "+extra.join(" OR "):""})${d?" after:"+d.replace(/-/g,"/"):""} -in:spam -in:trash -in:drafts`;
       let ids=[], tok="";
       do{ const r=await gmGet(`messages?maxResults=100&q=${encodeURIComponent(q)}${tok?"&pageToken="+tok:""}`); ids.push(...(r.messages||[]).map(m=>m.id)); tok=r.nextPageToken||""; } while(tok && ids.length<400);
       const have=new Set();
