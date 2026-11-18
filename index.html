@@ -397,6 +397,12 @@ body::before{background:var(--brand)}
 .synth-sec h4{display:flex;align-items:center;gap:6px}
 .synth-sec h4::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
 /* Rubriques repliées, comme les années de la liste */
+.sec-fold > summary h4.ech-t{text-transform:none;letter-spacing:0;font-size:.88rem;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ech-txt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;line-height:1.55;margin-bottom:8px}
+.synth-fold.tone-violet{background:#F4F0FA;border-color:#D8CCEC}
+.synth-fold.tone-violet > summary .lbl,.synth-fold.tone-violet .fold-hint{color:#5B3C99}
+.synth-fold.tone-violet > summary::before{border-color:#5B3C99}
+.synth-fold.tone-green{background:#EEF7F1;border-color:#BFDCCB}
 .synth.synth-fold{padding:0}
 details.synth-sec.sec-fold{padding:0}
 .synth-fold > summary{flex-wrap:wrap}
@@ -913,7 +919,10 @@ function synthSections(lines, headOf, foldItems){
     else { if(!cur){ cur={h:"",items:[]}; secs.push(cur); } cur.items.push(l); } }
   return secs.map(x=>{
     let its=x.items.map(t=>String(t).replace(/^\s*[-•]\s*/,"").trim()).filter(Boolean);
-    if(its.length===1 && its[0].length>260) its=its[0].split(/(?<=[.;])\s+(?=[A-ZÉÈÀÂÎÔÇ«(0-9])/).map(t=>t.replace(/\s*;$/,"").trim()).filter(Boolean);
+    if(its.length===1 && its[0].length>160){
+      const parts=its[0].split(/\s*;\s+|(?<=[a-zàâçéèêëîïôûù»)\d]\.)\s+(?=[A-ZÉÈÀÂÎÔÇ«])/).map(t=>t.trim().replace(/[;.]$/,"")).filter(Boolean);
+      if(parts.length>1) its=parts.map(t=>t.charAt(0).toUpperCase()+t.slice(1)+".");
+    }
     const len=its.join(" ").length;
     const body=its.length>1?`<ul>${its.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:(its[0]?`<p>${esc(its[0])}</p>`:"");
     if(foldItems && x.h) return `<details class="synth-sec sec-fold ${toneOf(x.h)}"><summary><svg class="icon sec-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><h4>${esc(x.h)}</h4></summary><div class="sec-body">${body}</div></details>`;
@@ -997,7 +1006,7 @@ function pageHtml(k){
   const ready=pd && pd.msgs;
   const anc=S.dossiers.find(d=>d.id===P.anchor);
   const wait='<div class="muted"><span class="spin"></span> Chargement…</div>';
-  const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":k==="marche"?"Ce qu'il faut retenir du marché":"Synthèse du dossier", k==="chantier"||k==="avocat"||k==="huissier")
+  const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":k==="marche"?"Ce qu'il faut retenir du marché":"Synthèse du dossier", k==="chantier"||k==="avocat"||k==="huissier"||k==="marche")
     : '<p class="muted">Pas encore de synthèse pour cette page.</p>';
   const openAnc=anc?`<button class="btn btn-ghost" type="button" data-open="${esc(anc.id)}">Ouvrir le dossier « ${esc(anc.titre)} »</button>`:"";
   let idx="", corps="", extra="";
@@ -1044,12 +1053,13 @@ function pageHtml(k){
     const seen=new Set(); const docs=[];
     ms.forEach(m=>(m.pieces||[]).forEach(p=>{ if(p.kind==="audio"||seen.has(p.id)) return; seen.add(p.id); docs.push({p,m}); }));
     const kwIn=t=>(P.kw||[]).find(w=>normTxt(t).includes(normTxt(w)))||"";
-    const ech=ms.filter(m=>m.texte && m.type!=="statut");
+    const ech=ms.filter(m=>m.texte && m.type!=="statut" && !/^(synth-|recap-|analyse-)/.test(String(m.id||"")));
     corps = !ready ? wait : `
       <section class="agsec"><span class="lbl">Documents (${docs.length})</span><div class="agdocs">${docs.length?docs.map(({p,m})=>pieceLink(p,fmtDate(m.quand||m.creeLe))).join(""):'<div class="muted">Aucun document.</div>'}</div></section>
-      <section class="agsec"><span class="lbl">Échanges et mentions (${ech.length})</span>${ech.length?ech.slice(0,80).map(m=>{ const w=kwIn(m.texte);
-        return `<div class="pg-ech"><div class="pg-ech-h"><b>${esc(fmtJour(m.quand||m.creeLe))}</b>${m.qui?`<span class="muted">${esc(qui(m))}</span>`:""}<button type="button" class="pg-dos" data-open="${esc(m.dossierId)}">${esc(titreOf(m.dossierId)||"Ouvrir le dossier")}</button></div>
-          <p>${w?snippet(m.texte,w):esc(String(m.texte).replace(/\s+/g," ").slice(0,260))+(String(m.texte).length>260?" …":"")}</p></div>`; }).join(""):'<div class="muted">Aucun échange.</div>'}</section>`;
+      <details class="synth synth-fold tone-violet"><summary><span class="lbl">Échanges et mentions</span><span class="fold-n">${ech.length} échange${ech.length>1?"s":""}</span><span class="fold-hint">Dérouler</span></summary><div class="synth-b">${ech.length?ech.slice(0,80).map(m=>{
+        const t=String(m.texte||""); const first=(t.split("\n")[0]||"").replace(/^Objet\s*:\s*/i,"").trim();
+        const titre=`${fmtDate(m.quand||m.creeLe)}${m.qui?" · "+qui(m):""}${first?" · "+first.slice(0,90):""}`;
+        return `<details class="synth-sec sec-fold ${toneOf(t.slice(0,300))}"><summary><svg class="icon sec-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><h4 class="ech-t">${esc(titre)}</h4></summary><div class="sec-body"><div class="ech-txt">${esc(t.slice(0,5000))}${t.length>5000?" …":""}</div><button type="button" class="pg-dos" data-open="${esc(m.dossierId)}">Ouvrir le dossier « ${esc(titreOf(m.dossierId)||"")} »</button></div></details>`; }).join(""):'<div class="muted">Aucun échange.</div>'}</div></details>`;
   }
   return `<div class="agpage">
     <div class="agpage-h">
