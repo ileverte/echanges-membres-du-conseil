@@ -35,7 +35,7 @@ label.pick{display:grid;gap:6px;border:1px dashed var(--line);border-radius:12px
   <section class="card"><h2>Connexion</h2><p class="muted" id="authMsg">Vérification…</p></section>
 
   <section class="card" id="secArch" hidden>
-    <h2>A. Archives du syndic et e-mails</h2>
+    <h2>Archives du syndic et e-mails</h2>
     <p class="muted">Choisissez les deux dossiers ci-dessous, l'un après l'autre, puis lancez l'import. Si la page se ferme, relancez : rien n'est importé deux fois.</p>
     <label class="pick"><span><b>1.</b> Le dossier <b>1 Magenta</b> (dans E:\5-Immobilier)</span><input type="file" class="dirIn" webkitdirectory directory multiple></label>
     <label class="pick"><span><b>2.</b> Le dossier <b>import-archives</b> (dans Documents\dossiers-ile-verte-prive)</span><input type="file" class="dirIn" webkitdirectory directory multiple></label>
@@ -45,20 +45,6 @@ label.pick{display:grid;gap:6px;border:1px dashed var(--line);border-radius:12px
     <div class="log" id="logArch" hidden></div>
   </section>
 
-  <section class="card" id="secWa" hidden>
-    <h2>B. Discussion WhatsApp « Conseil Syndical ILE VERTE »</h2>
-    <ol class="muted">
-      <li>Sur le téléphone, ouvrez le groupe WhatsApp, touchez son nom puis <b>Exporter la discussion</b> → <b>Joindre les médias</b>.</li>
-      <li>Envoyez-vous le fichier (e-mail ou Drive), copiez-le sur l'ordinateur et décompressez-le (clic droit → Extraire tout).</li>
-      <li>Ici, choisissez le dossier décompressé : il contient un fichier .txt et les photos, audios et documents.</li>
-    </ol>
-    <label class="pick"><span>Dossier de la discussion exportée</span><input type="file" id="waIn" webkitdirectory directory multiple></label>
-    <p id="waMsg"></p>
-    <button class="btn primary" id="goWa" disabled>Importer la discussion</button>
-    <progress id="barWa" value="0" max="1" hidden></progress>
-    <div class="log" id="logWa" hidden></div>
-    <p class="muted">Vous pourrez refaire un export plus tard : seuls les nouveaux messages seront ajoutés.</p>
-  </section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
@@ -78,7 +64,7 @@ if(!session){ $("#authMsg").innerHTML='Vous n\'êtes pas connecté(e). Ouvrez d\
 const {data:adm}=await sb.rpc("est_admin");
 if(!adm){ $("#authMsg").textContent=`Connecté(e) avec ${session.user.email}, mais cette adresse n'est pas administratrice : l'import est réservé aux administrateurs.`; return; }
 $("#authMsg").innerHTML=`<span class="ok">Connecté(e) avec ${session.user.email} (administrateur).</span>`;
-$("#secArch").hidden=false; $("#secWa").hidden=false;
+$("#secArch").hidden=false;
 const me=session.user.id;
 const uploaded=new Set();
 async function upload(path,file,log){
@@ -106,6 +92,13 @@ document.querySelectorAll(".dirIn").forEach(inp=>inp.addEventListener("change",a
 $("#goArch").addEventListener("click",async()=>{
   $("#goArch").disabled=true; const log=logTo("#logArch"); const bar=$("#barArch"); bar.hidden=false;
   const total=manifest.dossiers.length+manifest.messages.length; bar.max=total; let done=0, errs=0;
+  const rm=manifest.supprimer||{};
+  if((rm.messages||[]).length){
+    let n=0; for(let i=0;i<rm.messages.length;i+=100){ const {error,count}=await sb.from("messages").delete({count:"exact"}).in("id",rm.messages.slice(i,i+100)); if(error) log(`Retrait : ${error.message}`,"err"); else n+=count||0; }
+    for(const id of (rm.dossiers||[])){ await sb.from("dossiers").delete().eq("id",id); }
+    let nf=0; for(let i=0;i<(rm.pieces||[]).length;i+=100){ const {data,error}=await sb.storage.from("pieces").remove(rm.pieces.slice(i,i+100)); if(error) log(`Retrait des fichiers : ${error.message}`,"err"); else nf+=(data||[]).length; }
+    log(`Documents nominatifs retirés : ${n} entrée(s), ${nf} fichier(s).`,"ok");
+  }
   for(const d of manifest.dossiers){
     const row={...d}; delete row.mettre_a_jour;
     const {error}=await sb.from("dossiers").upsert(row,{onConflict:"id",ignoreDuplicates:true});
@@ -137,64 +130,6 @@ $("#goArch").addEventListener("click",async()=>{
   $("#goArch").disabled=false;
 });
 
-/* ---------- B. WhatsApp ---------- */
-let wa=null;
-function parseWhatsApp(txt){
-  txt=txt.replace(/\u200e|\u200f|\u202f/g," ");
-  const rxA=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4}),?\s+(?:à\s+)?(\d{1,2}):(\d{2})(?::\d{2})?\s*-\s+([^:]+?):\s([\s\S]*)$/;
-  const rxI=/^\[(\d{1,2})\/(\d{1,2})\/(\d{2,4}),?\s+(\d{1,2}):(\d{2})(?::\d{2})?\]\s+([^:]+?):\s([\s\S]*)$/;
-  const out=[]; let cur=null;
-  for(const raw of txt.split(/\r?\n/)){
-    const line=raw.trim()==="" ? raw : raw.replace(/^\s+/,"");
-    const m=line.match(rxI)||line.match(rxA);
-    if(m){ let [,d,mo,y,h,mi,a,t]=m; y=+y<100?2000+ +y:+y; cur={date:new Date(y,+mo-1,+d,+h,+mi),auteur:a.trim(),texte:t}; out.push(cur); }
-    else if(cur) cur.texte+="\n"+raw;
-  }
-  return out;
-}
-$("#waIn").addEventListener("change",async e=>{
-  const all=[...e.target.files]; const txtF=all.find(f=>/\.txt$/i.test(f.name));
-  if(!txtF){ $("#waMsg").innerHTML='<span class="err">Aucun fichier .txt trouvé dans ce dossier.</span>'; return; }
-  const media={}; all.forEach(f=>media[f.name]=f);
-  const msgs=parseWhatsApp(await txtF.text());
-  msgs.forEach(m=>{
-    m.files=[];
-    const names=[...m.texte.matchAll(/([\w().-]+\.(?:jpe?g|png|webp|gif|mp4|mov|opus|ogg|m4a|mp3|aac|pdf|docx?|xlsx?|vcf))/gi)].map(x=>x[1]);
-    names.forEach(n=>{ if(media[n] && !m.files.includes(n)) m.files.push(n); });
-    m.texte=m.texte.replace(/<\s*(joint|pièce jointe|attached)\s*:[^>]*>/gi,"").replace(/[\w().-]+\.(?:jpe?g|png|webp|gif|mp4|mov|opus|ogg|m4a|mp3|aac|pdf|docx?|xlsx?|vcf)\s*\((fichier joint|file attached)\)/gi,"").trim();
-    if(/^<?(médias omis|media omitted)>?$/i.test(m.texte)) m.texte="(média non exporté)";
-  });
-  wa=msgs.filter(m=>m.texte||m.files.length);
-  const nf=wa.reduce((a,m)=>a+m.files.length,0);
-  const d0=wa[0]?.date, d1=wa[wa.length-1]?.date;
-  $("#waMsg").innerHTML=wa.length?`${wa.length} messages du ${d0.toLocaleDateString("fr-FR")} au ${d1.toLocaleDateString("fr-FR")}, ${nf} photo(s), audio(s) ou document(s).`:'<span class="err">Le format de ce fichier n\'a pas été reconnu.</span>';
-  $("#goWa").disabled=!wa.length;
-  wa.media=media;
-});
-$("#goWa").addEventListener("click",async()=>{
-  $("#goWa").disabled=true; const log=logTo("#logWa"); const bar=$("#barWa"); bar.hidden=false; bar.max=wa.length; let done=0, added=0, errs=0;
-  const DID="whatsapp-conseil-syndical";
-  await sb.from("dossiers").upsert({id:DID,cat:"reunion",titre:"Groupe WhatsApp « Conseil Syndical ILE VERTE »",batiment:"Toute la résidence",statut:"en_cours",priorite:"normale",
-    description:"Messages, photos et audios échangés dans le groupe WhatsApp du conseil syndical, importés depuis les exports de la discussion.",
-    reunion:{type:"Autre réunion",heure:"",lieu:"WhatsApp",participants:"",odj:"",decisions:"",actions:""},auteur_nom:"Import WhatsApp"},{onConflict:"id",ignoreDuplicates:true});
-  for(const m of wa){
-    const id="wa-"+(await sha(m.date.toISOString()+"|"+m.auteur+"|"+m.texte)).slice(0,24);
-    const {data:ex}=await sb.from("messages").select("id").eq("id",id).maybeSingle();
-    if(ex){ bar.value=++done; continue; }
-    const pieces=[];
-    for(const n of m.files){
-      const f=wa.media[n]; const path=`whatsapp/${id}/${safe(n)}`;
-      if(await upload(path,f,log)) pieces.push({id:path,kind:kindOf(n),nom:n,taille:f.size}); else errs++;
-    }
-    const {error}=await sb.from("messages").insert({id,dossier_id:DID,type:null,auteur:me,auteur_nom:m.auteur,texte:m.texte||null,pieces,cree_le:m.date.toISOString()});
-    if(error){ errs++; log(`${m.date.toLocaleString("fr-FR")} : ${error.message}`,"err"); } else added++;
-    bar.value=++done;
-  }
-  const last=wa[wa.length-1];
-  await sb.from("dossiers").update({maj_le:last.date.toISOString(),dernier:{texte:(last.texte||"Pièce jointe").slice(0,160),auteur:"nom:"+last.auteur,le:last.date.getTime()}}).eq("id",DID);
-  log(`${added} nouveau(x) message(s) ajouté(s)${errs?`, ${errs} erreur(s)`:""}.`, errs?"err":"ok");
-  $("#goWa").disabled=false;
-});
 })();
 </script>
 </body>
