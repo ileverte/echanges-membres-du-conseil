@@ -360,6 +360,42 @@ body::before{background:var(--brand)}
 }
 
 .cr-hint{border:1px dashed var(--line);border-radius:12px;padding:16px 18px;color:var(--muted);background:var(--surface)}
+.synth-fold{padding:0;gap:0}
+.synth-fold > summary{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;list-style:none}
+.synth-fold > summary::-webkit-details-marker{display:none}
+.synth-fold > summary::before{content:"";width:9px;height:9px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg);transition:transform .15s;flex:none}
+.synth-fold[open] > summary::before{transform:rotate(45deg)}
+.synth-fold > summary .lbl{font-size:.9rem}
+.synth-fold .fold-n{font-size:.8rem;color:var(--muted)}
+.synth-fold .fold-hint{margin-left:auto;font-size:.82rem;font-weight:600;color:var(--accent)}
+.synth-fold[open] .fold-hint{display:none}
+.synth-fold > .synth-b{padding:0 16px 16px}
+/* Couleurs des rubriques de synthèse : fond très clair, titre foncé, texte noir */
+.synth-sec.tone-red{background:#FDF1EF;border-color:#F2C6C0}
+.synth-sec.tone-red h4{color:#A3261E}
+.synth-sec.tone-red li::marker{color:#A3261E}
+.synth-sec.tone-amber{background:#FFF6E6;border-color:#F0D6A6}
+.synth-sec.tone-amber h4{color:#8A5300}
+.synth-sec.tone-amber li::marker{color:#B36B00}
+.synth-sec.tone-green{background:#EEF7F1;border-color:#BFDCCB}
+.synth-sec.tone-green h4{color:#17694A}
+.synth-sec.tone-blue{background:#EEF4FB;border-color:#C5D7EE}
+.synth-sec.tone-blue h4{color:#1F5FA8}
+.synth-sec.tone-blue li::marker{color:#1F5FA8}
+.synth-sec.tone-violet{background:#F4F0FA;border-color:#D8CCEC}
+.synth-sec.tone-violet h4{color:#5B3C99}
+.synth-sec.tone-violet li::marker{color:#5B3C99}
+.synth-fold.tone-red{background:#FDF1EF;border-color:#F2C6C0}
+.synth-fold.tone-red > summary .lbl,.synth-fold.tone-red .fold-hint{color:#A3261E}
+.synth-fold.tone-red > summary::before{border-color:#A3261E}
+.synth-fold.tone-blue{background:#EEF4FB;border-color:#C5D7EE}
+.synth-fold.tone-blue > summary .lbl,.synth-fold.tone-blue .fold-hint{color:#1F5FA8}
+.synth-fold.tone-blue > summary::before{border-color:#1F5FA8}
+.synth-fold.tone-amber{background:#FFF6E6;border-color:#F0D6A6}
+.synth-fold.tone-amber > summary .lbl,.synth-fold.tone-amber .fold-hint{color:#8A5300}
+.synth-fold.tone-amber > summary::before{border-color:#8A5300}
+.synth-sec h4{display:flex;align-items:center;gap:6px}
+.synth-sec h4::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
 /* ===== Paramétrage ===== */
 .pr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .pr-row:first-of-type{border-top:0}
@@ -712,8 +748,10 @@ function filtered(){
     return true;
   });
 }
-const yearOf=d=>{ const y=String(d.dateRef||"").slice(0,4); return /^\d{4}$/.test(y)?y:(d.creeLe?String(new Date(d.creeLe).getFullYear()):"Sans date"); };
-const dateKey=d=>d.dateRef||(d.creeLe?new Date(d.creeLe).toISOString().slice(0,10):"");
+const refYear=d=>{ const m=String(d.id||"").match(/^ag[oe]-((?:19|20)\d{2})\b/)||String(d.titre||"").match(/\b((?:19|20)\d{2})\s*$/); return m?m[1]:""; };
+const dRef=d=>{ const y=refYear(d); const r=String(d.dateRef||""); return (y && r.slice(0,4)!==y)?y+"-06-30":r; };
+const yearOf=d=>{ const y=String(dRef(d)).slice(0,4); return /^\d{4}$/.test(y)?y:(d.creeLe?String(new Date(d.creeLe).getFullYear()):"Sans date"); };
+const dateKey=d=>dRef(d)||(d.creeLe?new Date(d.creeLe).toISOString().slice(0,10):"");
 function byYear(list, card){
   const sorted=list.slice().sort((a,b)=>dateKey(b).localeCompare(dateKey(a))||(b.majLe||0)-(a.majLe||0));
   const groups=new Map(); sorted.forEach(d=>{ const y=yearOf(d); if(!groups.has(y)) groups.set(y,[]); groups.get(y).push(d); });
@@ -842,6 +880,15 @@ const PAGES={
     intro:"Constats d'huissier : synthèse, procès-verbaux obtenus ou attendus, documents et échanges qui les mentionnent."},
 };
 const normTxt=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function toneOf(h){
+  const t=normTxt(h||"");
+  if(/termite/.test(t)) return "tone-red";
+  if(/doute|verifier|attendu|manque|vigilance|reserve/.test(t)) return "tone-amber";
+  if(/conclusion|decision|retenir|ce que dit|signature|montant|garantie/.test(t)) return "tone-green";
+  if(/^bat|batiment|logement|log\.|reception|avancement/.test(t)) return "tone-blue";
+  if(/chronologie|historique|sources|participation|bureau|lieu/.test(t)) return "tone-violet";
+  return "";
+}
 function synthSections(lines, headOf){
   const secs=[]; let cur=null;
   for(const l of lines){ if(!String(l).trim()) continue; const m=headOf(l);
@@ -852,9 +899,12 @@ function synthSections(lines, headOf){
     if(its.length===1 && its[0].length>260) its=its[0].split(/(?<=[.;])\s+(?=[A-ZÉÈÀÂÎÔÇ«(0-9])/).map(t=>t.replace(/\s*;$/,"").trim()).filter(Boolean);
     const len=its.join(" ").length;
     const body=its.length>1?`<ul>${its.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:(its[0]?`<p>${esc(its[0])}</p>`:"");
-    return `<div class="synth-sec${len>380?" wide":""}">${x.h?`<h4>${esc(x.h)}</h4>`:""}${body}</div>`; }).join("");
+    return `<div class="synth-sec${len>380?" wide":""} ${toneOf(x.h)}">${x.h?`<h4>${esc(x.h)}</h4>`:""}${body}</div>`; }).join("");
 }
-function synthBlock(text,label){
+function synthBlock(text,label,fold){
+  if(fold){ const b=synthSections(String(text||"").split("\n"), l=>l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/));
+    const n=(b.match(/class="synth-sec/g)||[]).length;
+    return `<details class="synth synth-fold ${toneOf(label)}"><summary><span class="lbl">${esc(label)}</span><span class="fold-n">${n} rubrique${n>1?"s":""}</span><span class="fold-hint">Dérouler</span></summary><div class="synth-b">${b}</div></details>`; }
   const body=synthSections(String(text||"").split("\n"), l=>l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/));
   return `<section class="synth"><span class="lbl">${esc(label)}</span><div class="synth-b">${body}</div></section>`;
 }
@@ -929,7 +979,7 @@ function pageHtml(k){
   const ready=pd && pd.msgs;
   const anc=S.dossiers.find(d=>d.id===P.anchor);
   const wait='<div class="muted"><span class="spin"></span> Chargement…</div>';
-  const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":k==="marche"?"Ce qu'il faut retenir du marché":"Synthèse du dossier")
+  const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":k==="marche"?"Ce qu'il faut retenir du marché":"Synthèse du dossier", k==="chantier"||k==="avocat"||k==="huissier")
     : '<p class="muted">Pas encore de synthèse pour cette page.</p>';
   const openAnc=anc?`<button class="btn btn-ghost" type="button" data-open="${esc(anc.id)}">Ouvrir le dossier « ${esc(anc.titre)} »</button>`:"";
   let idx="", corps="", extra="";
@@ -952,7 +1002,7 @@ function pageHtml(k){
     crs.sort((a,b)=>parseInt(keyOf(b))-parseInt(keyOf(a)) || keyOf(b).localeCompare(keyOf(a)));
     const rec=ms.find(m=>m.id==="recap-logements");
     if(rec){ const parts=String(rec.texte||"").split("\n").slice(1).join("\n").split("\n@@\n");
-      extra=synthBlock(parts[0]||"","Termites : logements et pièces concernés")+(parts[1]?synthBlock(parts[1],"Autres réserves par logement"):""); }
+      extra=synthBlock(parts[0]||"","Termites : logements et pièces concernés",true)+(parts[1]?synthBlock(parts[1],"Autres réserves par logement",true):""); }
     const allP=ms.filter(m=>m.id!=="recap-logements" && !/^Compte rendu de chantier n°/i.test(m.texte||"")).flatMap(m=>(m.pieces||[]).map(p=>({...p,le:m.creeLe})));
     const docsFor=m=>{ const key=keyOf(m); const num=parseInt(key);
       const ps=allP.filter(p=>p.id===m.de || (numOf(p.nom)!=="" && +numOf(p.nom)===num && !keys.has(num+"bis") && !used.has(p.id)));
@@ -1000,11 +1050,11 @@ function pageHtml(k){
 function agoPage(){
   const isAg=d=>/^assembl[ée]e g[ée]n[ée]rale/i.test(d.titre||"");
   const autres=S.dossiers.filter(d=>d.cat==="ago" && !isAg(d));
-  const ags=S.dossiers.filter(d=>d.cat==="ago" && isAg(d)).sort((a,b)=>String(b.dateRef||"").localeCompare(String(a.dateRef||"")) || (b.creeLe||0)-(a.creeLe||0));
+  const ags=S.dossiers.filter(d=>d.cat==="ago" && isAg(d)).sort((a,b)=>String(dRef(b)).localeCompare(String(dRef(a))) || (b.creeLe||0)-(a.creeLe||0));
   if(!S.agSel || (S.agSel!=="tous" && !ags.some(d=>d.id===S.agSel))) S.agSel=ags.length?ags[0].id:"tous";
   const sel=S.agSel;
   if(!S.agoMsgs && !S.agoReq) loadAgoMsgs(ags.map(d=>d.id));
-  const yr=d=>(d.dateRef||"").slice(0,4)||"Sans date";
+  const yr=d=>String(dRef(d)).slice(0,4)||"Sans date";
   const ext=d=>/extraordinaire/i.test(d.titre||"");
   const years=ags.map(d=>+(d.dateRef||"").slice(0,4)).filter(Boolean);
   const span=years.length?` · ${Math.min(...years)} à ${Math.max(...years)}`:"";
