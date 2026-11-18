@@ -30,16 +30,6 @@ img{max-width:100%}
   --f-body:"Figtree","Segoe UI",system-ui,-apple-system,sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0E1512; --surface:#151F1A; --surface-2:#1C2923; --ink:#E3ECE6; --muted:#93A69B; --line:#2A3A32;
-  --accent:#4FC592; --accent-ink:#06140D; --accent-soft:#183428;
-  --c-ago:#A0A3F2; --c-travaux:#E6A64C; --c-intervention:#4CC4CF; --c-signalement:#F27F74; --c-reunion:#D59BE8;
-  --ok:#4FC592; --warn:#E6A64C; --danger:#F27F74; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0E1512; --surface:#151F1A; --surface-2:#1C2923; --ink:#E3ECE6; --muted:#93A69B; --line:#2A3A32;
-  --accent:#4FC592; --accent-ink:#06140D; --accent-soft:#183428;
-  --c-ago:#A0A3F2; --c-travaux:#E6A64C; --c-intervention:#4CC4CF; --c-signalement:#F27F74; --c-reunion:#D59BE8;
-  --ok:#4FC592; --warn:#E6A64C; --danger:#F27F74; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 28px rgba(0,0,0,.35); color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -224,8 +214,6 @@ textarea.field{resize:vertical;min-height:90px}
 
 /* ===== Refonte graphique : bandeau vert de la résidence, tuiles par rubrique ===== */
 :root{--brand:#0F4D36;--brand-ink:#EEF7F2;--brand-soft:#E2F0E8;--lagoon:#0B7C86;--radius:14px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#0B2A1E;--brand-ink:#E3F1E9;--brand-soft:#16362A;--lagoon:#4CC4CF}}
-:root[data-theme="dark"]{--brand:#0B2A1E;--brand-ink:#E3F1E9;--brand-soft:#16362A;--lagoon:#4CC4CF}
 body::before{background:var(--brand)}
 .top{background:var(--brand);border-bottom:0;color:var(--brand-ink)}
 .top-in{padding-block:14px}
@@ -326,6 +314,44 @@ body::before{background:var(--brand)}
   .tabs{padding-bottom:10px}
   .tab{padding:6px 11px;font-size:.84rem}
 }
+
+/* ===== Version claire et simple ===== */
+:root{color-scheme:light;--bg:#F5F7F5;--surface:#FFFFFF;--surface-2:#EEF3EF;--line:#DCE4DF;--ink:#16211B;--muted:#5C6B63;--accent:#17694A;--accent-soft:#E3F1E9;--brand-soft:#E8F3EC}
+body::before{background:#fff}
+.top{background:#fff;color:var(--ink);border-bottom:1px solid var(--line);box-shadow:0 1px 2px rgba(22,33,27,.04)}
+.brand h1{color:var(--ink)}
+.brand small{color:var(--muted)}
+.brand-mark{background:var(--accent);border:0}
+.top .btn-ghost{color:var(--ink)}
+.top .btn-ghost:hover{background:var(--surface-2)}
+.top .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.top .btn-primary:hover{background:#125A3F}
+.me{border-color:var(--line);color:var(--ink)}
+.me img{box-shadow:none}
+.tabs{background:#fff;padding-bottom:12px}
+.tab{background:var(--bg);border-color:var(--line);color:var(--ink)}
+.tab:hover{background:var(--surface-2)}
+.tab .n{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.tab[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab[aria-pressed="true"] .n{background:rgba(255,255,255,.2);color:#fff;border-color:transparent}
+.card{box-shadow:none}
+.card:hover{transform:none;box-shadow:0 2px 10px rgba(22,33,27,.06)}
+.card p{-webkit-line-clamp:1}
+.search input{font-size:1rem;padding-top:11px;padding-bottom:11px;border-radius:12px;border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.search input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.hits{display:grid;gap:6px;padding:0 16px 8px}
+.hits-h{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding:6px 2px 2px}
+.hit{display:grid;gap:2px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--ink);font:inherit;cursor:pointer}
+.hit:hover{border-color:var(--accent)}
+.hit b{font-size:.9rem}
+.hit small{color:var(--muted);font-size:.78rem}
+.hit span{font-size:.86rem;color:var(--ink);overflow-wrap:anywhere}
+mark{background:#FFE9A8;color:inherit;border-radius:3px;padding:0 1px}
+.gate-art{background:var(--accent-soft);color:var(--ink)}
+.gate-art h2{color:var(--ink)}
+.gate-art p,.gate-art .lbl{color:var(--muted)}
+.gate-art svg.art path{stroke:var(--accent)}
+.gate-art svg.art text{fill:var(--accent)}
 </style>
 </head>
 <body>
@@ -360,7 +386,7 @@ body::before{background:var(--brand)}
       <div class="filters">
         <div class="search">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input class="field" id="fQ" type="search" placeholder="Rechercher un dossier, un mot…" autocomplete="off">
+          <input class="field" id="fQ" type="search" placeholder="Rechercher : dossier, nom, mot, référence…" autocomplete="off" aria-label="Rechercher dans les dossiers et les messages">
         </div>
         <div class="filters-row">
           <select class="field" id="fBat" aria-label="Bâtiment"></select>
@@ -452,9 +478,9 @@ const catTile = c => `<span class="ctile cat-${esc(c)}" aria-hidden="true">${cat
 const AV_COLORS = ["#17694A","#0B7C86","#7A3E8F","#9C5C07","#4B4FB5","#B3312A","#3F6F2A"];
 const avColor = id => { const s=String(nameOf(id)); let h=0; for(const ch of s) h=(h*31+ch.charCodeAt(0))|0; return AV_COLORS[Math.abs(h)%AV_COLORS.length]; };
 const ART = `<svg class="art" viewBox="0 0 320 150" fill="none" aria-hidden="true">
-  ${["A","B","C","D","E","F"].map((l,i)=>{ const x=10+i*52; return `<path d="M${x} 118V70l20-17 20 17v48z" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-linejoin="round"/><path d="M${x+8} 80h8M${x+24} 80h8M${x+8} 94h8M${x+24} 94h8" stroke="rgba(255,255,255,.4)" stroke-width="3" stroke-linecap="round"/><text x="${x+20}" y="112" fill="rgba(255,255,255,.75)" font-family="sans-serif" font-size="10" text-anchor="middle">${l}</text>`; }).join("")}
-  <path d="M0 130q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
-  <path d="M0 142q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+  ${["A","B","C","D","E","F"].map((l,i)=>{ const x=10+i*52; return `<path d="M${x} 118V70l20-17 20 17v48z" fill="#fff" stroke="#17694A" stroke-width="1.5" stroke-linejoin="round"/><path d="M${x+8} 80h8M${x+24} 80h8M${x+8} 94h8M${x+24} 94h8" stroke="#9CC7B2" stroke-width="3" stroke-linecap="round"/><text x="${x+20}" y="112" fill="#17694A" font-family="sans-serif" font-size="10" text-anchor="middle">${l}</text>`; }).join("")}
+  <path d="M0 130q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="#0B7C86" stroke-width="2"/>
+  <path d="M0 142q20-7 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0" stroke="#9FD3D8" stroke-width="2"/>
 </svg>`;
 const qui = m => [m.qui, m.organisme].filter(Boolean).join(" · ") || "Interlocuteur non précisé";
 const fmtRel = t => {
@@ -558,7 +584,7 @@ function filtered(){
     if(S.f.bat && d.batiment!==S.f.bat) return false;
     if(S.f.st==="actifs" && ["resolu","clos"].includes(d.statut)) return false;
     if(S.f.st && S.f.st!=="actifs" && d.statut!==S.f.st) return false;
-    if(q){ const r=d.reunion||{}; const hay=[d.titre,d.description,d.reference,d.intervenant,d.batiment,d.dernier?.texte,refOf(d),r.participants,r.odj,r.decisions,r.actions,r.lieu,r.type].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    if(q){ const r=d.reunion||{}; const hay=[d.titre,d.description,d.reference,d.intervenant,d.batiment,d.dernier?.texte,refOf(d),r.participants,r.odj,r.decisions,r.actions,r.lieu,r.type,CATS[d.cat]?.long,STATUTS[d.statut]].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
     return true;
   });
 }
@@ -570,7 +596,9 @@ function renderList(){
     el.innerHTML = `<div class="empty"><h3>Aucun dossier pour l'instant</h3><p>Créez le premier dossier : un procès-verbal d'AGO, le suivi d'un chantier, une demande d'intervention ou un problème constaté. Chaque dossier a son propre fil de messages, photos et audios.</p>${S.canWrite?'<button class="btn btn-primary" type="button" data-act="new">Créer le premier dossier</button>':""}</div>`;
     return;
   }
-  if(!ds.length){ el.innerHTML=`<div class="empty"><h3>Aucun dossier ne correspond</h3><p>Modifiez la rubrique, le bâtiment ou le statut, ou effacez la recherche.</p></div>`; return; }
+  const q=S.f.q.trim();
+  const hitsHtml = (q.length>=3 && S.msgHits && S.msgHits.length) ? `<div class="hits"><div class="hits-h">Trouvé dans ${S.msgHits.length} message(s)</div>${S.msgHits.slice(0,30).map(h=>{ const d=S.dossiers.find(x=>x.id===h.dossier_id); return d?`<button type="button" class="hit" data-open="${esc(d.id)}"><b>${esc(d.titre)}</b><small>${esc(fmtDT(h.cree_le))}${h.qui?" · "+esc(h.qui):""}</small><span>${snippet(h.texte,q)}</span></button>`:""; }).join("")}</div>` : "";
+  if(!ds.length){ el.innerHTML=(hitsHtml?`<div class="hits-h" style="padding:6px 18px 0">Aucun titre de dossier ne correspond</div>`:`<div class="empty"><h3>Aucun dossier ne correspond</h3><p>Modifiez la rubrique, le bâtiment ou le statut, ou effacez la recherche.</p></div>`)+hitsHtml; return; }
   const act=S.dossiers.filter(d=>!["resolu","clos"].includes(d.statut));
   const week=Date.now()-7*86400e3;
   const stats=`<div class="stats" aria-label="Résumé">
@@ -578,7 +606,7 @@ function renderList(){
     ${act.filter(d=>d.priorite==="urgente").length?`<span class="stat alert"><b>${act.filter(d=>d.priorite==="urgente").length}</b> urgents</span>`:""}
     <span class="stat"><b>${act.filter(d=>d.statut==="attente").length}</b> en attente syndic</span>
     <span class="stat"><b>${S.dossiers.filter(d=>(d.majLe||0)>week).length}</b> mis à jour cette semaine</span></div>`;
-  el.innerHTML = stats + ds.map(d => {
+  el.innerHTML = (q.length>=3 ? hitsHtml+(hitsHtml?`<div class="hits-h" style="padding:0 18px">Dossiers</div>`:"") : stats) + ds.map(d => {
     const c=CATS[d.cat]||CATS.signalement;
     const last=d.dernier;
     return `<button type="button" class="card" data-open="${esc(d.id)}" aria-current="${S.cur===d.id}">
@@ -1198,7 +1226,31 @@ document.addEventListener("change", e=>{
   if(e.target.id==="inAudio"){ addFiles(e.target.files,"audio"); e.target.value=""; }
   if(e.target.id==="inDoc"){ addFiles(e.target.files,"doc"); e.target.value=""; }
 });
-$("#fQ").addEventListener("input",e=>{ S.f.q=e.target.value; renderList(); });
+$("#fQ").addEventListener("input",e=>{ S.f.q=e.target.value; renderList(); scheduleMsgSearch(); });
+let msTimer=null;
+function scheduleMsgSearch(){
+  clearTimeout(msTimer);
+  const q=S.f.q.trim();
+  if(q.length<3){ S.msgHits=null; renderList(); return; }
+  msTimer=setTimeout(async()=>{
+    let hits=[];
+    if(DEMO){
+      const ql=q.toLowerCase();
+      hits=Object.entries(DEMO.msgs).flatMap(([did,ms])=>ms.filter(m=>(m.texte||"").toLowerCase().includes(ql)).map(m=>({dossier_id:did,texte:m.texte,cree_le:m.creeLe,qui:m.qui})));
+    } else if(sb){
+      const {data}=await sb.from("messages").select("id,dossier_id,texte,cree_le,qui,auteur_nom").ilike("texte",`%${q.replace(/[%_\\]/g,m=>"\\"+m)}%`).order("cree_le",{ascending:false}).limit(60);
+      hits=(data||[]).map(r=>({...r,cree_le:ts(r.cree_le)}));
+    }
+    if(S.f.q.trim()!==q) return;
+    S.msgHits=hits.sort((a,b)=>(b.cree_le||0)-(a.cree_le||0)); renderList();
+  },300);
+}
+function snippet(t,q){
+  const txt=String(t||"").replace(/\s+/g," "); const i=txt.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0) return esc(txt.slice(0,140));
+  const a=Math.max(0,i-60), b=Math.min(txt.length,i+q.length+80);
+  return (a?"… ":"")+esc(txt.slice(a,i))+"<mark>"+esc(txt.slice(i,i+q.length))+"</mark>"+esc(txt.slice(i+q.length,b))+(b<txt.length?" …":"");
+}
 $("#btnNew").addEventListener("click",()=>dossierForm());
 $("#btnMe").addEventListener("click",()=>profilForm());
 window.addEventListener("hashchange",()=>{ const m=location.hash.match(/^#dossier-(.+)$/); if(m && S.loaded) openDossier(m[1],true); });

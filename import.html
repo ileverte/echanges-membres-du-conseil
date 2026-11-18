@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Import des archives · Ile Verte</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Figtree:wght@400;600&display=swap">
+<style>
+:root{--bg:#F5F7F5;--surface:#fff;--ink:#16211B;--muted:#5C6B63;--line:#DCE4DF;--accent:#17694A;--err:#B3312A;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,"Segoe UI",system-ui,sans-serif;font-size:15px;line-height:1.5}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:14px max(16px,env(safe-area-inset-left))}
+header h1{margin:0;font-family:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;font-size:1.2rem}
+header a{color:var(--accent);font-size:.9rem}
+main{max-width:780px;margin:22px auto;padding:0 16px;display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:10px}
+h2{margin:0;font-family:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;font-size:1.1rem}
+p,ol{margin:0}
+ol{padding-left:20px;display:grid;gap:4px}
+.muted{color:var(--muted)}
+.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 16px;cursor:pointer;justify-self:start}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+progress{width:100%;height:12px}
+.log{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;max-height:300px;overflow:auto;white-space:pre-wrap;background:var(--bg);border-radius:10px;padding:10px}
+.ok{color:var(--accent)}.err{color:var(--err)}
+label.pick{display:grid;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:12px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>Import dans Dossiers Ile Verte</h1><a href="./">← Retour à l'application</a></header>
+<main>
+  <section class="card"><h2>Connexion</h2><p class="muted" id="authMsg">Vérification…</p></section>
+
+  <section class="card" id="secArch" hidden>
+    <h2>A. Archives du syndic et e-mails</h2>
+    <p class="muted">Choisissez les deux dossiers ci-dessous, l'un après l'autre, puis lancez l'import. Si la page se ferme, relancez : rien n'est importé deux fois.</p>
+    <label class="pick"><span><b>1.</b> Le dossier <b>1 Magenta</b> (dans E:\5-Immobilier)</span><input type="file" class="dirIn" webkitdirectory directory multiple></label>
+    <label class="pick"><span><b>2.</b> Le dossier <b>import-archives</b> (dans Documents\dossiers-ile-verte-prive)</span><input type="file" class="dirIn" webkitdirectory directory multiple></label>
+    <p id="archMsg"></p>
+    <button class="btn primary" id="goArch" disabled>Importer les archives</button>
+    <progress id="barArch" value="0" max="1" hidden></progress>
+    <div class="log" id="logArch" hidden></div>
+  </section>
+
+  <section class="card" id="secWa" hidden>
+    <h2>B. Discussion WhatsApp « Conseil Syndical ILE VERTE »</h2>
+    <ol class="muted">
+      <li>Sur le téléphone, ouvrez le groupe WhatsApp, touchez son nom puis <b>Exporter la discussion</b> → <b>Joindre les médias</b>.</li>
+      <li>Envoyez-vous le fichier (e-mail ou Drive), copiez-le sur l'ordinateur et décompressez-le (clic droit → Extraire tout).</li>
+      <li>Ici, choisissez le dossier décompressé : il contient un fichier .txt et les photos, audios et documents.</li>
+    </ol>
+    <label class="pick"><span>Dossier de la discussion exportée</span><input type="file" id="waIn" webkitdirectory directory multiple></label>
+    <p id="waMsg"></p>
+    <button class="btn primary" id="goWa" disabled>Importer la discussion</button>
+    <progress id="barWa" value="0" max="1" hidden></progress>
+    <div class="log" id="logWa" hidden></div>
+    <p class="muted">Vous pourrez refaire un export plus tard : seuls les nouveaux messages seront ajoutés.</p>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(async()=>{
+const $=s=>document.querySelector(s);
+const CFG=window.ILE_VERTE_CONFIG||{};
+const sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+const logTo=box=>(t,c)=>{ const el=$(box); el.hidden=false; const d=document.createElement("div"); if(c) d.className=c; d.textContent=t; el.appendChild(d); el.scrollTop=1e9; };
+const TYPES={pdf:"application/pdf",jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",webp:"image/webp",gif:"image/gif",mp4:"video/mp4",mov:"video/quicktime",m4a:"audio/mp4",mp3:"audio/mpeg",opus:"audio/ogg",ogg:"audio/ogg",wav:"audio/wav",webm:"audio/webm",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",doc:"application/msword",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",xlsm:"application/vnd.ms-excel.sheet.macroEnabled.12",xls:"application/vnd.ms-excel",odt:"application/vnd.oasis.opendocument.text",zip:"application/zip",txt:"text/plain",vcf:"text/vcard"};
+const ext=n=>(n.match(/\.([a-z0-9]+)$/i)||[,""])[1].toLowerCase();
+const kindOf=n=>{ const e=ext(n); if(["jpg","jpeg","png","gif","webp"].includes(e)) return "image"; if(["mp4","mov","webm"].includes(e)&&!/^ptt|audio/i.test(n)) return "video"; if(["opus","m4a","mp3","ogg","wav","aac"].includes(e)) return "audio"; return "pdf"; };
+const safe=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9._-]+/g,"-").replace(/-+/g,"-").slice(0,110);
+const sha=async s=>[...new Uint8Array(await crypto.subtle.digest("SHA-1",new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,"0")).join("");
+const {data:{session}}=await sb.auth.getSession();
+if(!session){ $("#authMsg").innerHTML='Vous n\'êtes pas connecté(e). Ouvrez d\'abord <a href="./">l\'application</a>, connectez-vous, puis revenez sur cette page.'; return; }
+const {data:adm}=await sb.rpc("est_admin");
+if(!adm){ $("#authMsg").textContent=`Connecté(e) avec ${session.user.email}, mais cette adresse n'est pas administratrice : l'import est réservé aux administrateurs.`; return; }
+$("#authMsg").innerHTML=`<span class="ok">Connecté(e) avec ${session.user.email} (administrateur).</span>`;
+$("#secArch").hidden=false; $("#secWa").hidden=false;
+const me=session.user.id;
+const uploaded=new Set();
+async function upload(path,file,log){
+  if(uploaded.has(path)) return true;
+  const {error}=await sb.storage.from("pieces").upload(path,file,{contentType:TYPES[ext(file.name)]||file.type||"application/octet-stream",upsert:true});
+  if(error){ log(`  envoi impossible : ${file.name} (${error.message})`,"err"); return false; }
+  uploaded.add(path); return true;
+}
+
+/* ---------- A. Archives ---------- */
+const files={}; let manifest=null;
+document.querySelectorAll(".dirIn").forEach(inp=>inp.addEventListener("change",async e=>{
+  for(const f of e.target.files) files[f.webkitRelativePath]=f;
+  const mf=Object.keys(files).find(k=>k.endsWith("import-archives/manifest.json"));
+  if(mf) manifest=JSON.parse(await files[mf].text());
+  if(!manifest){ $("#archMsg").textContent="Choisissez aussi le dossier import-archives."; return; }
+  const need=manifest.messages.flatMap(m=>(m.files||[]).map(x=>x.local));
+  const missing=need.filter(p=>!files[p]);
+  $("#archMsg").innerHTML=`${manifest.dossiers.length} nouveaux dossiers, ${manifest.messages.length} entrées, ${need.length} fichiers. `+(missing.length?`<span class="err">${missing.length} fichier(s) pas encore trouvé(s) : choisissez aussi le dossier 1 Magenta.</span>`:'<span class="ok">Tous les fichiers sont présents.</span>');
+  $("#goArch").disabled=false;
+}));
+$("#goArch").addEventListener("click",async()=>{
+  $("#goArch").disabled=true; const log=logTo("#logArch"); const bar=$("#barArch"); bar.hidden=false;
+  const total=manifest.dossiers.length+manifest.messages.length; bar.max=total; let done=0, errs=0;
+  for(const d of manifest.dossiers){
+    const row={...d}; delete row.mettre_a_jour;
+    const {error}=await sb.from("dossiers").upsert(row,{onConflict:"id",ignoreDuplicates:true});
+    if(error){ errs++; log(`Dossier « ${d.titre} » : ${error.message}`,"err"); }
+    bar.value=++done;
+  }
+  log(`${manifest.dossiers.length} dossiers prêts.`,"ok");
+  const have=new Set();
+  const ids=manifest.messages.map(m=>m.id);
+  for(let i=0;i<ids.length;i+=200){ const {data}=await sb.from("messages").select("id").in("id",ids.slice(i,i+200)); (data||[]).forEach(x=>have.add(x.id)); }
+  for(const m of manifest.messages){
+    if(have.has(m.id)){ bar.value=++done; continue; }
+    const pieces=[];
+    for(const f of (m.files||[])){
+      const file=files[f.local]; if(!file){ log(`  fichier absent : ${f.local}`,"err"); errs++; continue; }
+      if(await upload(f.path,file,log)) pieces.push({id:f.path,kind:f.kind,nom:f.nom,taille:file.size}); else errs++;
+    }
+    const row={...m, auteur:me, pieces}; delete row.files;
+    const {error}=await sb.from("messages").insert(row);
+    if(error){ errs++; log(`Entrée ${m.id} : ${error.message}`,"err"); }
+    else log(`${new Date(m.cree_le).toLocaleDateString("fr-FR")} · ${(m.texte||"").split("\n")[0].slice(0,90)}${pieces.length?` (${pieces.length} fichier)`:""}`,"ok");
+    bar.value=++done;
+  }
+  log(errs?`Terminé avec ${errs} erreur(s) : relancez pour réessayer.`:"Import terminé. Ouvrez l'application et rechargez la page.", errs?"err":"ok");
+  $("#goArch").disabled=false;
+});
+
+/* ---------- B. WhatsApp ---------- */
+let wa=null;
+function parseWhatsApp(txt){
+  txt=txt.replace(/\u200e|\u200f|\u202f/g," ");
+  const rxA=/^(\d{1,2})\/(\d{1,2})\/(\d{2,4}),?\s+(?:à\s+)?(\d{1,2}):(\d{2})(?::\d{2})?\s*-\s+([^:]+?):\s([\s\S]*)$/;
+  const rxI=/^\[(\d{1,2})\/(\d{1,2})\/(\d{2,4}),?\s+(\d{1,2}):(\d{2})(?::\d{2})?\]\s+([^:]+?):\s([\s\S]*)$/;
+  const out=[]; let cur=null;
+  for(const raw of txt.split(/\r?\n/)){
+    const line=raw.trim()==="" ? raw : raw.replace(/^\s+/,"");
+    const m=line.match(rxI)||line.match(rxA);
+    if(m){ let [,d,mo,y,h,mi,a,t]=m; y=+y<100?2000+ +y:+y; cur={date:new Date(y,+mo-1,+d,+h,+mi),auteur:a.trim(),texte:t}; out.push(cur); }
+    else if(cur) cur.texte+="\n"+raw;
+  }
+  return out;
+}
+$("#waIn").addEventListener("change",async e=>{
+  const all=[...e.target.files]; const txtF=all.find(f=>/\.txt$/i.test(f.name));
+  if(!txtF){ $("#waMsg").innerHTML='<span class="err">Aucun fichier .txt trouvé dans ce dossier.</span>'; return; }
+  const media={}; all.forEach(f=>media[f.name]=f);
+  const msgs=parseWhatsApp(await txtF.text());
+  msgs.forEach(m=>{
+    m.files=[];
+    const names=[...m.texte.matchAll(/([\w().-]+\.(?:jpe?g|png|webp|gif|mp4|mov|opus|ogg|m4a|mp3|aac|pdf|docx?|xlsx?|vcf))/gi)].map(x=>x[1]);
+    names.forEach(n=>{ if(media[n] && !m.files.includes(n)) m.files.push(n); });
+    m.texte=m.texte.replace(/<\s*(joint|pièce jointe|attached)\s*:[^>]*>/gi,"").replace(/[\w().-]+\.(?:jpe?g|png|webp|gif|mp4|mov|opus|ogg|m4a|mp3|aac|pdf|docx?|xlsx?|vcf)\s*\((fichier joint|file attached)\)/gi,"").trim();
+    if(/^<?(médias omis|media omitted)>?$/i.test(m.texte)) m.texte="(média non exporté)";
+  });
+  wa=msgs.filter(m=>m.texte||m.files.length);
+  const nf=wa.reduce((a,m)=>a+m.files.length,0);
+  const d0=wa[0]?.date, d1=wa[wa.length-1]?.date;
+  $("#waMsg").innerHTML=wa.length?`${wa.length} messages du ${d0.toLocaleDateString("fr-FR")} au ${d1.toLocaleDateString("fr-FR")}, ${nf} photo(s), audio(s) ou document(s).`:'<span class="err">Le format de ce fichier n\'a pas été reconnu.</span>';
+  $("#goWa").disabled=!wa.length;
+  wa.media=media;
+});
+$("#goWa").addEventListener("click",async()=>{
+  $("#goWa").disabled=true; const log=logTo("#logWa"); const bar=$("#barWa"); bar.hidden=false; bar.max=wa.length; let done=0, added=0, errs=0;
+  const DID="whatsapp-conseil-syndical";
+  await sb.from("dossiers").upsert({id:DID,cat:"reunion",titre:"Groupe WhatsApp « Conseil Syndical ILE VERTE »",batiment:"Toute la résidence",statut:"en_cours",priorite:"normale",
+    description:"Messages, photos et audios échangés dans le groupe WhatsApp du conseil syndical, importés depuis les exports de la discussion.",
+    reunion:{type:"Autre réunion",heure:"",lieu:"WhatsApp",participants:"",odj:"",decisions:"",actions:""},auteur_nom:"Import WhatsApp"},{onConflict:"id",ignoreDuplicates:true});
+  for(const m of wa){
+    const id="wa-"+(await sha(m.date.toISOString()+"|"+m.auteur+"|"+m.texte)).slice(0,24);
+    const {data:ex}=await sb.from("messages").select("id").eq("id",id).maybeSingle();
+    if(ex){ bar.value=++done; continue; }
+    const pieces=[];
+    for(const n of m.files){
+      const f=wa.media[n]; const path=`whatsapp/${id}/${safe(n)}`;
+      if(await upload(path,f,log)) pieces.push({id:path,kind:kindOf(n),nom:n,taille:f.size}); else errs++;
+    }
+    const {error}=await sb.from("messages").insert({id,dossier_id:DID,type:null,auteur:me,auteur_nom:m.auteur,texte:m.texte||null,pieces,cree_le:m.date.toISOString()});
+    if(error){ errs++; log(`${m.date.toLocaleString("fr-FR")} : ${error.message}`,"err"); } else added++;
+    bar.value=++done;
+  }
+  const last=wa[wa.length-1];
+  await sb.from("dossiers").update({maj_le:last.date.toISOString(),dernier:{texte:(last.texte||"Pièce jointe").slice(0,160),auteur:"nom:"+last.auteur,le:last.date.getTime()}}).eq("id",DID);
+  log(`${added} nouveau(x) message(s) ajouté(s)${errs?`, ${errs} erreur(s)`:""}.`, errs?"err":"ok");
+  $("#goWa").disabled=false;
+});
+})();
+</script>
+</body>
+</html>
