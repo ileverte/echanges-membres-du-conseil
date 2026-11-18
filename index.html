@@ -396,6 +396,23 @@ body::before{background:var(--brand)}
 .synth-fold.tone-amber > summary::before{border-color:#8A5300}
 .synth-sec h4{display:flex;align-items:center;gap:6px}
 .synth-sec h4::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+/* Rubriques repliées, comme les années de la liste */
+.synth.synth-fold{padding:0}
+details.synth-sec.sec-fold{padding:0}
+.synth-fold > summary{flex-wrap:wrap}
+.synth-fold > summary .lbl{min-width:0;overflow-wrap:anywhere}
+.synth-fold > .synth-b{grid-template-columns:minmax(0,1fr);gap:6px}
+.sec-fold{padding:0}
+.sec-fold > summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;list-style:none}
+.sec-fold > summary::-webkit-details-marker{display:none}
+.sec-fold > summary h4{margin:0;font-size:.86rem}
+.sec-fold > summary h4::before{display:none}
+.sec-chev{width:16px;height:16px;flex:none;transition:transform .15s}
+.sec-fold[open] .sec-chev{transform:rotate(90deg)}
+.sec-fold > summary:hover{filter:brightness(.97)}
+.sec-fold .sec-body{padding:0 14px 12px 40px}
+@media (max-width:640px){ .synth-fold > .synth-b{padding:0 8px 10px} .sec-fold > summary{padding:9px 10px} .sec-fold .sec-body{padding:0 10px 10px 12px} .agpage{padding-left:10px;padding-right:10px} }
+.sec-fold.tone-red .sec-chev{color:#A3261E}.sec-fold.tone-amber .sec-chev{color:#8A5300}.sec-fold.tone-green .sec-chev{color:#17694A}.sec-fold.tone-blue .sec-chev{color:#1F5FA8}.sec-fold.tone-violet .sec-chev{color:#5B3C99}
 /* ===== Paramétrage ===== */
 .pr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .pr-row:first-of-type{border-top:0}
@@ -889,7 +906,7 @@ function toneOf(h){
   if(/chronologie|historique|sources|participation|bureau|lieu/.test(t)) return "tone-violet";
   return "";
 }
-function synthSections(lines, headOf){
+function synthSections(lines, headOf, foldItems){
   const secs=[]; let cur=null;
   for(const l of lines){ if(!String(l).trim()) continue; const m=headOf(l);
     if(m){ cur={h:m[1],items:[]}; secs.push(cur); if(m[2]&&m[2].trim()) cur.items.push(m[2]); }
@@ -899,10 +916,11 @@ function synthSections(lines, headOf){
     if(its.length===1 && its[0].length>260) its=its[0].split(/(?<=[.;])\s+(?=[A-ZÉÈÀÂÎÔÇ«(0-9])/).map(t=>t.replace(/\s*;$/,"").trim()).filter(Boolean);
     const len=its.join(" ").length;
     const body=its.length>1?`<ul>${its.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:(its[0]?`<p>${esc(its[0])}</p>`:"");
+    if(foldItems && x.h) return `<details class="synth-sec sec-fold ${toneOf(x.h)}"><summary><svg class="icon sec-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><h4>${esc(x.h)}</h4></summary><div class="sec-body">${body}</div></details>`;
     return `<div class="synth-sec${len>380?" wide":""} ${toneOf(x.h)}">${x.h?`<h4>${esc(x.h)}</h4>`:""}${body}</div>`; }).join("");
 }
 function synthBlock(text,label,fold){
-  if(fold){ const b=synthSections(String(text||"").split("\n"), l=>l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/));
+  if(fold){ const b=synthSections(String(text||"").split("\n"), l=>l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/), true);
     const n=(b.match(/class="synth-sec/g)||[]).length;
     return `<details class="synth synth-fold ${toneOf(label)}"><summary><span class="lbl">${esc(label)}</span><span class="fold-n">${n} rubrique${n>1?"s":""}</span><span class="fold-hint">Dérouler</span></summary><div class="synth-b">${b}</div></details>`; }
   const body=synthSections(String(text||"").split("\n"), l=>l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/));
