@@ -722,6 +722,9 @@ function renderHead(d){
     </div>`;
 }
 const PAGES={
+  marche:{titre:"Marché de travaux de rénovation des toitures", court:"Marché", anchor:"trx-marche-costentin",
+    ic:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><circle cx="12" cy="14" r="2.5"/><path d="m10.5 16-1 4 2.5-1.2 2.5 1.2-1-4"/>',
+    intro:"Les pièces du marché COSTENTIN (acte d'engagement, CCAP, CCTP, DPGF, BPU, DQE), leurs versions antérieures, les offres comparées et les documents de suivi, avec les clauses essentielles à retenir."},
   chantier:{titre:"Comptes rendus de chantier", court:"CR de chantier", anchor:"trx-cr-chantier",
     ic:'<path d="M2 20h20"/><path d="M4 20V10l8-6 8 6v10"/><path d="M9 20v-5h6v5"/><path d="M12 4V2"/>',
     intro:"Bilan des réserves et des travaux, puis la synthèse de chaque compte rendu de réunion de chantier, du plus récent au plus ancien."},
@@ -735,7 +738,7 @@ const PAGES={
 const normTxt=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 function synthBlock(text,label){
   const body=String(text||"").split("\n").map(l=>{
-    const m=l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:\-–]{1,40}?)\s*:\s*(.*)$/);
+    const m=l.match(/^([A-ZÉÈÀÂÎÔÛÇ][^:–]{1,40}?)\s*:\s*(.*)$/);
     if(m) return `<div class="synth-h">${esc(m[1])}</div>${m[2]?`<div>${esc(m[2])}</div>`:""}`;
     return l.trim()?`<div>${esc(l)}</div>`:""; }).join("");
   return `<section class="synth"><span class="lbl">${esc(label)}</span><div class="synth-b">${body}</div></section>`;
@@ -772,11 +775,21 @@ function pageHtml(k){
   const ready=pd && pd.msgs;
   const anc=S.dossiers.find(d=>d.id===P.anchor);
   const wait='<div class="muted"><span class="spin"></span> Chargement…</div>';
-  const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":"Synthèse du dossier")
+  const synth=anc&&anc.description ? synthBlock(anc.description, k==="chantier"?"Bilan des réserves et des travaux":k==="marche"?"Ce qu'il faut retenir du marché":"Synthèse du dossier")
     : '<p class="muted">Pas encore de synthèse pour cette page.</p>';
   const openAnc=anc?`<button class="btn btn-ghost" type="button" data-open="${esc(anc.id)}">Ouvrir le dossier « ${esc(anc.titre)} »</button>`:"";
   let idx="", corps="";
-  if(k==="chantier"){
+  if(k==="marche"){
+    const GROUPES=["Pièces contractuelles signées","Versions antérieures et documents de conception","Offres et comparatifs","Suivi et documents divers"];
+    const grpOf=m=>{ const x=(m.texte||"").match(/^Classement : (.+)$/m); return x?x[1].trim():"Suivi et documents divers"; };
+    const items=ready?pd.msgs.flatMap(m=>(m.pieces||[]).map(p=>({p,g:grpOf(m),le:m.creeLe}))):[];
+    const numP=n=>{ const x=String(n||"").match(/Pi[eè]ce\s*0?(\d+)/i); return x?+x[1]:99; };
+    const groups=[...GROUPES, ...new Set(items.map(i=>i.g).filter(g=>!GROUPES.includes(g)))];
+    corps = !ready ? wait : groups.map(g=>{ let l=items.filter(i=>i.g===g); if(!l.length) return "";
+      l = g===GROUPES[0] ? l.sort((a,b)=>numP(a.p.nom)-numP(b.p.nom)) : l.sort((a,b)=>(b.le||0)-(a.le||0));
+      return `<section class="agsec"><span class="lbl">${esc(g)} (${l.length})</span><div class="agdocs">${l.map(i=>pieceLink(i.p, g===GROUPES[0]&&numP(i.p.nom)<99?"Pièce "+String(numP(i.p.nom)).padStart(2,"0"):fmtDate(i.le))).join("")}</div></section>`; }).join("")
+      || '<div class="empty"><h3>Aucune pièce du marché pour l\'instant</h3></div>';
+  } else if(k==="chantier"){
     const ms=ready?pd.msgs.filter(m=>m.dossierId===P.anchor):[];
     const crs=ms.filter(m=>/^Compte rendu de chantier n°/i.test(m.texte||""));
     const keyOf=m=>{ const x=(m.texte||"").match(/^Compte rendu de chantier n°\s*(\d+)(\s*bis)?/i); return x?x[1]+(x[2]?"bis":""):""; };
@@ -834,7 +847,7 @@ function agoPage(){
   const span=years.length?` · ${Math.min(...years)} à ${Math.max(...years)}`:"";
   const docs=d=>{
     if(!S.agoMsgs) return '<div class="muted"><span class="spin"></span> Chargement des documents…</div>';
-    const ps=(S.agoMsgs[d.id]||[]).flatMap(m=>m.pieces||[]).filter(p=>p.kind!=="audio");
+    const ps=(S.agoMsgs[d.id]||[]).slice().sort((a,b)=>(b.creeLe||0)-(a.creeLe||0)).flatMap(m=>m.pieces||[]).filter(p=>p.kind!=="audio");
     if(!ps.length) return '<div class="muted">Aucun document joint à ce dossier.</div>';
     return ps.map(p=>`<a class="pj-file" data-path="${esc(p.id)}" href="${blobUrl(p.id)||"#"}" target="_blank" rel="noopener">${p.kind==="image"?I.photo:I.doc}<span>${esc(p.nom||"Document")}</span><span class="muted mono" style="margin-left:auto;flex:none">${p.taille?esc(fmtSize(p.taille)):""}</span></a>`).join("");
   };
@@ -898,6 +911,7 @@ function reuHtml(d){
 function allPieces(){
   const out={image:[],audio:[],video:[],pdf:[]};
   S.msgs.forEach(m=>(m.pieces||[]).forEach(p=>out[p.kind]?.push({...p,auteur:m.auteur,le:m.creeLe})));
+  Object.values(out).forEach(l=>l.sort((a,b)=>(b.le||0)-(a.le||0)));
   return out;
 }
 function renderSubtabs(){
@@ -924,7 +938,7 @@ function renderThread(){
   if(!S.msgsLoaded){ t.innerHTML='<div class="empty"><span class="spin"></span> Chargement des messages…</div>'; return; }
   if(!S.msgs.length){ t.innerHTML=`<div class="empty"><h3>Pas encore de message</h3><p>Écrivez le premier message, ajoutez des photos du problème ou un message vocal.</p></div>`; return; }
   let lastDay="";
-  t.innerHTML = S.msgs.map(m=>{ const day=new Date(m.creeLe||0).toDateString(); const sep = day!==lastDay ? `<div class="dayline">${esc(fmtJour(m.creeLe))}</div>` : ""; lastDay=day; return sep + msgRow(m); }).join("");
+  t.innerHTML = S.msgs.slice().sort((a,b)=>(b.creeLe||0)-(a.creeLe||0)).map(m=>{ const day=new Date(m.creeLe||0).toDateString(); const sep = day!==lastDay ? `<div class="dayline">${esc(fmtJour(m.creeLe))}</div>` : ""; lastDay=day; return sep + msgRow(m); }).join("");
   function msgRow(m){
     if(m.type==="statut") return `<div class="sys">${esc(nameOf(m.auteur))} a passé le dossier en « ${esc(STATUTS[m.a]||m.a)} » · ${esc(fmtDT(m.creeLe))}</div>`;
     if(m.type==="contact") return contactHtml(m);
@@ -934,7 +948,7 @@ function renderThread(){
       <div class="bubble"><div class="who"><b>${esc(mine?"Vous":nameOf(m.auteur))}</b>${lot?`<span class="muted">${esc(lot)}</span>`:""}<span class="muted">${esc(fmtDT(m.creeLe))}</span>${mine?`<button class="msg-del" type="button" data-delmsg="${esc(m.id)}">Supprimer</button>`:""}</div>
       ${m.texte?`<p class="txt">${esc(m.texte)}</p>`:""}${piecesHtml(m)}</div></div>`;
   }
-  if(nearBottom || S.scrollToEnd){ t.scrollTop=t.scrollHeight; S.scrollToEnd=false; }
+  if(S.scrollToEnd){ t.scrollTop=0; S.scrollToEnd=false; }
 }
 function contactHtml(m){
   const c=CANAUX[m.canal]||CANAUX.appel; const mine=m.auteur===S.me;
@@ -1067,7 +1081,7 @@ function renderGallery(){
   if(p.image.length) h+=`<section><span class="lbl">Photos · ${p.image.length}</span><div class="pj-grid">${p.image.map(x=>`<button class="pj-img" type="button" data-img="${esc(x.id)}" aria-label="Agrandir la photo"><img src="${blobUrl(esc(x.id))}" alt="Photo jointe" loading="lazy"></button>`).join("")}</div></section>`;
   if(p.audio.length) h+=`<section><span class="lbl">Messages vocaux · ${p.audio.length}</span>${p.audio.map(x=>`<div class="pj-audio"><span class="muted" style="font-size:.82rem">${esc(nameOf(x.auteur))} · ${esc(fmtDT(x.le))}</span><audio controls preload="none" src="${blobUrl(esc(x.id))}"></audio></div>`).join("")}</section>`;
   if(p.video.length) h+=`<section><span class="lbl">Vidéos · ${p.video.length}</span>${p.video.map(x=>`<div class="pj-video"><video controls preload="none" src="${blobUrl(esc(x.id))}"></video></div>`).join("")}</section>`;
-  if(p.pdf.length) h+=`<section><span class="lbl">Documents PDF · ${p.pdf.length}</span>${p.pdf.map(x=>`<a class="pj-file" href="${blobUrl(esc(x.id))}" target="_blank" rel="noopener">${I.doc}<span>${esc(x.nom||"Document.pdf")}</span><span class="muted mono" style="margin-left:auto;flex:none">${esc(fmtDate(x.le))}</span></a>`).join("")}</section>`;
+  if(p.pdf.length) h+=`<section><span class="lbl">Documents · ${p.pdf.length} · du plus récent au plus ancien</span>${p.pdf.map(x=>`<a class="pj-file" href="${blobUrl(esc(x.id))}" target="_blank" rel="noopener">${I.doc}<span>${esc(x.nom||"Document.pdf")}</span><span class="muted mono" style="margin-left:auto;flex:none">${esc(fmtDate(x.le))}</span></a>`).join("")}</section>`;
   g.innerHTML=h;
 }
 function renderComposer(){
