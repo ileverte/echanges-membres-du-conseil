@@ -89,15 +89,18 @@ async function upload(path,file,log){
 }
 
 /* ---------- A. Archives ---------- */
-const files={}; let manifest=null;
+const files={}; const bySuffix={}; let manifest=null;
+const norm=p=>p.normalize("NFC").replace(/\\/g,"/").toLowerCase();
+function indexFile(key,f){ const parts=norm(key).split("/"); for(let i=0;i<parts.length;i++){ const suf=parts.slice(i).join("/"); if(!(suf in bySuffix)) bySuffix[suf]=f; } }
+function findFile(local){ if(files[local]) return files[local]; const parts=norm(local).split("/"); for(let i=0;i<parts.length-1;i++){ const f=bySuffix[parts.slice(i).join("/")]; if(f) return f; } return null; }
 document.querySelectorAll(".dirIn").forEach(inp=>inp.addEventListener("change",async e=>{
-  for(const f of e.target.files) files[f.webkitRelativePath]=f;
-  const mf=Object.keys(files).find(k=>k.endsWith("import-archives/manifest.json"));
+  for(const f of e.target.files){ files[f.webkitRelativePath]=f; indexFile(f.webkitRelativePath,f); }
+  const mf=Object.keys(files).find(k=>norm(k).endsWith("manifest.json"));
   if(mf) manifest=JSON.parse(await files[mf].text());
   if(!manifest){ $("#archMsg").textContent="Choisissez aussi le dossier import-archives."; return; }
   const need=manifest.messages.flatMap(m=>(m.files||[]).map(x=>x.local));
-  const missing=need.filter(p=>!files[p]);
-  $("#archMsg").innerHTML=`${manifest.dossiers.length} nouveaux dossiers, ${manifest.messages.length} entrées, ${need.length} fichiers. `+(missing.length?`<span class="err">${missing.length} fichier(s) pas encore trouvé(s) : choisissez aussi le dossier 1 Magenta.</span>`:'<span class="ok">Tous les fichiers sont présents.</span>');
+  const missing=need.filter(p=>!findFile(p));
+  $("#archMsg").innerHTML=`${manifest.dossiers.length} nouveaux dossiers, ${manifest.messages.length} entrées, ${need.length} fichiers. `+(missing.length?`<span class="err">${need.length-missing.length} fichier(s) trouvé(s), ${missing.length} manquant(s) : choisissez aussi le dossier 1 Magenta (E:\\5-Immobilier\\1 Magenta).</span>`:'<span class="ok">Tous les fichiers sont trouvés.</span>');
   $("#goArch").disabled=false;
 }));
 $("#goArch").addEventListener("click",async()=>{
@@ -110,14 +113,17 @@ $("#goArch").addEventListener("click",async()=>{
     bar.value=++done;
   }
   log(`${manifest.dossiers.length} dossiers prêts.`,"ok");
-  const have=new Set();
+  const have=new Map();
   const ids=manifest.messages.map(m=>m.id);
-  for(let i=0;i<ids.length;i+=200){ const {data}=await sb.from("messages").select("id").in("id",ids.slice(i,i+200)); (data||[]).forEach(x=>have.add(x.id)); }
+  for(let i=0;i<ids.length;i+=200){ const {data}=await sb.from("messages").select("id,pieces").in("id",ids.slice(i,i+200)); (data||[]).forEach(x=>have.set(x.id,(x.pieces||[]).length)); }
+  let repaired=0;
   for(const m of manifest.messages){
-    if(have.has(m.id)){ bar.value=++done; continue; }
+    const nfiles=(m.files||[]).length;
+    if(have.has(m.id) && (have.get(m.id)>=nfiles)){ bar.value=++done; continue; }
+    if(have.has(m.id)){ const {error:de}=await sb.from("messages").delete().eq("id",m.id); if(de){ errs++; log(`Entrée ${m.id} : ${de.message}`,"err"); bar.value=++done; continue; } repaired++; }
     const pieces=[];
     for(const f of (m.files||[])){
-      const file=files[f.local]; if(!file){ log(`  fichier absent : ${f.local}`,"err"); errs++; continue; }
+      const file=findFile(f.local); if(!file){ log(`  fichier absent : ${f.local}`,"err"); errs++; continue; }
       if(await upload(f.path,file,log)) pieces.push({id:f.path,kind:f.kind,nom:f.nom,taille:file.size}); else errs++;
     }
     const row={...m, auteur:me, pieces}; delete row.files;
@@ -126,6 +132,7 @@ $("#goArch").addEventListener("click",async()=>{
     else log(`${new Date(m.cree_le).toLocaleDateString("fr-FR")} · ${(m.texte||"").split("\n")[0].slice(0,90)}${pieces.length?` (${pieces.length} fichier)`:""}`,"ok");
     bar.value=++done;
   }
+  log(`${uploaded.size} fichier(s) envoyé(s)${repaired?`, ${repaired} entrée(s) complétée(s)`:""}.`,"ok");
   log(errs?`Terminé avec ${errs} erreur(s) : relancez pour réessayer.`:"Import terminé. Ouvrez l'application et rechargez la page.", errs?"err":"ok");
   $("#goArch").disabled=false;
 });
