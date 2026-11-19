@@ -451,6 +451,19 @@ details.synth-sec.sec-fold{padding:0}
 .hist-b{display:grid;gap:8px;padding:0 14px 12px 52px}
 .hist-b audio{width:100%;max-width:420px}
 @media (max-width:640px){ .hist-item > summary{grid-template-columns:auto minmax(0,1fr);} .hist-item > summary .hist-ic,.hist-item > summary .chip{display:none} .hist-b{padding:0 12px 12px} }
+.hist-cat{border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.hist-cat > summary{display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;list-style:none;font-size:1rem}
+.hist-cat > summary::-webkit-details-marker{display:none}
+.hist-cat > summary .ctile{width:34px;height:34px;border-radius:10px}
+.hist-cat[open] > summary{border-bottom:1px solid var(--line)}
+.hist-n{margin-left:auto;font-size:.8rem;color:var(--muted)}
+.hist-cat-b{display:grid;gap:6px;padding:10px}
+.hist-year{border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.hist-year > summary{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;list-style:none}
+.hist-year > summary::-webkit-details-marker{display:none}
+.hist-year[open] > summary{background:var(--accent-soft);border-radius:12px 12px 0 0}
+.hist-year[open] .yr-chev{transform:rotate(90deg)}
+.hist-year-b{display:grid;gap:6px;padding:8px}
 /* ===== Paramétrage ===== */
 .pr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .pr-row:first-of-type{border-top:0}
@@ -944,7 +957,8 @@ const PAGES={
     ic:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/>',
     intro:"Tous les e-mails, appels et messages reçus et envoyés, tous dossiers confondus, du plus récent au plus ancien."},
 };
-S.hist={sens:"",canal:"",q:""};
+S.hist={sens:"",canal:"",q:"",open:new Set()};
+document.addEventListener("toggle",e=>{ const d=e.target; if(d && d.dataset && d.dataset.hk && !S.hist.q.trim()){ if(d.open) S.hist.open.add(d.dataset.hk); else S.hist.open.delete(d.dataset.hk); } },true);
 async function loadHist(){
   S.pdata.historique={loading:true};
   await Promise.resolve();
@@ -969,10 +983,25 @@ function histListHtml(){
   const items=histItems();
   if(!items) return '<div class="muted"><span class="spin"></span> Chargement…</div>';
   if(!items.length) return '<div class="cr-hint">Aucun échange ne correspond à ces filtres.</div>';
-  let lastMonth="", html=`<div class="muted" style="font-size:.85rem">${items.length} échange${items.length>1?"s":""}${items.length>400?" (les 400 plus récents affichés)":""}</div>`;
-  items.slice(0,400).forEach(m=>{
-    const t=m.quand||m.creeLe; const mo=t?new Date(t).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}):"Sans date";
-    if(mo!==lastMonth){ html+=`<div class="hist-month">${esc(mo.charAt(0).toUpperCase()+mo.slice(1))}</div>`; lastMonth=mo; }
+  const all=S.hist.q.trim().length>0;
+  const groups=new Map(); const order=[...Object.keys(CATS),"autre"];
+  items.forEach(m=>{ const dos=S.dossiers.find(d=>d.id===m.dossierId); const c=dos&&CATS[dos.cat]?dos.cat:"autre";
+    const t=m.quand||m.creeLe; const y=t?String(new Date(t).getFullYear()):"Sans date";
+    if(!groups.has(c)) groups.set(c,new Map()); const g=groups.get(c); if(!g.has(y)) g.set(y,[]); g.get(y).push(m); });
+  let html=`<div class="muted" style="font-size:.85rem">${items.length} échange${items.length>1?"s":""}, classés par catégorie de dossier puis par année. Cliquez pour dérouler.</div>`;
+  order.filter(c=>groups.has(c)).forEach(c=>{
+    const g=groups.get(c); const n=[...g.values()].reduce((s,l)=>s+l.length,0);
+    const lab=c==="autre"?"Sans dossier":CATS[c].long; const ck="c:"+c;
+    html+=`<details class="hist-cat" data-hk="${ck}"${all||S.hist.open.has(ck)?" open":""}><summary>${c==="autre"?`<span class="ctile" aria-hidden="true">${catIcon("tous")}</span>`:catTile(c)}<b>${esc(lab)}</b><span class="hist-n">${n} échange${n>1?"s":""}</span></summary><div class="hist-cat-b">`;
+    [...g.keys()].sort((a,b)=>b.localeCompare(a)).forEach(y=>{
+      const l=g.get(y); const yk="y:"+c+":"+y;
+      html+=`<details class="hist-year" data-hk="${yk}"${all||S.hist.open.has(yk)?" open":""}><summary><svg class="icon yr-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg><b>${esc(y)}</b><span class="hist-n">${l.length} échange${l.length>1?"s":""}</span></summary><div class="hist-year-b">${l.slice(0,300).map(histItemHtml).join("")}</div></details>`; });
+    html+=`</div></details>`; });
+  return html;
+}
+function histItemHtml(m){
+    let html="";
+    const t=m.quand||m.creeLe;
     const c=CANAUX[m.canal]||CANAUX.message; const txt=String(m.texte||"");
     const first=(txt.split("\n")[0]||"").replace(/^Objet\s*:\s*/i,"").trim();
     const dos=S.dossiers.find(d=>d.id===m.dossierId);
@@ -988,7 +1017,7 @@ function histListHtml(){
       ${(m.pieces||[]).filter(p=>p.kind!=="audio").map(p=>pieceLink(p)).join("")}
       ${(m.pieces||[]).filter(p=>p.kind==="audio").map(p=>`<audio controls preload="none" data-path="${esc(p.id)}" src="${blobUrl(p.id)||""}"></audio>`).join("")}
       ${dos?`<button type="button" class="pg-dos" data-open="${esc(dos.id)}" style="margin-left:0;text-align:left">Dossier : ${esc(dos.titre)}</button>`:""}
-    </div></details>`; });
+    </div></details>`;
   return html;
 }
 function histHtml(){
