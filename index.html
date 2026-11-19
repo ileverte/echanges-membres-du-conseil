@@ -396,6 +396,16 @@ body::before{background:var(--brand)}
 .synth-fold.tone-amber > summary::before{border-color:#8A5300}
 .synth-sec h4{display:flex;align-items:center;gap:6px}
 .synth-sec h4::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.head-fold{border:1px solid var(--line);border-radius:12px;background:#F3F8F5}
+.head-fold > summary{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;list-style:none}
+.head-fold > summary::-webkit-details-marker{display:none}
+.head-fold > summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg);transition:transform .15s;flex:none}
+.head-fold[open] > summary::before{transform:rotate(45deg)}
+.head-fold > summary .lbl{color:var(--accent)}
+.head-fold .fold-hint{margin-left:auto;font-size:.82rem;font-weight:600;color:var(--accent)}
+.head-fold[open] .fold-hint{display:none}
+.head-fold-b{padding:0 12px 12px}
+.head-fold-b .synth{border:0;background:transparent;padding:0}
 /* Rubriques repliées, comme les années de la liste */
 .sec-fold > summary h4.ech-t{text-transform:none;letter-spacing:0;font-size:.88rem;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .ech-txt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;line-height:1.55;margin-bottom:8px}
@@ -419,6 +429,28 @@ details.synth-sec.sec-fold{padding:0}
 .sec-fold .sec-body{padding:0 14px 12px 40px}
 @media (max-width:640px){ .synth-fold > .synth-b{padding:0 8px 10px} .sec-fold > summary{padding:9px 10px} .sec-fold .sec-body{padding:0 10px 10px 12px} .agpage{padding-left:10px;padding-right:10px} }
 .sec-fold.tone-red .sec-chev{color:#A3261E}.sec-fold.tone-amber .sec-chev{color:#8A5300}.sec-fold.tone-green .sec-chev{color:#17694A}.sec-fold.tone-blue .sec-chev{color:#1F5FA8}.sec-fold.tone-violet .sec-chev{color:#5B3C99}
+/* ===== Historique des échanges ===== */
+.hist-filters{display:grid;gap:8px;margin-top:6px}
+.hist-filters .agidx{margin-top:0}
+.hist-filters .field{max-width:420px}
+.hist-list{display:grid;gap:6px}
+.hist-month{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 2px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.hist-item{border:1px solid var(--line);border-radius:12px;background:var(--surface);border-left:4px solid #9CC7B2}
+.hist-item.out{border-left-color:#1F5FA8}
+.hist-item > summary{display:grid;grid-template-columns:auto auto auto minmax(0,1fr);gap:10px;align-items:center;padding:9px 12px;cursor:pointer;list-style:none}
+.hist-item > summary::-webkit-details-marker{display:none}
+.hist-item[open]{box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.hist-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--surface-2);color:var(--accent)}
+.hist-item.out .hist-ic{color:#1F5FA8;background:#EEF4FB}
+.hist-ic .icon{width:16px;height:16px}
+.hist-when{display:grid;font-weight:700;font-size:.88rem;font-variant-numeric:tabular-nums;line-height:1.2}
+.hist-when small{font-weight:400;color:var(--muted);font-size:.75rem}
+.hist-t{display:grid;gap:1px;min-width:0}
+.hist-t b{font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-t small{color:var(--muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-b{display:grid;gap:8px;padding:0 14px 12px 52px}
+.hist-b audio{width:100%;max-width:420px}
+@media (max-width:640px){ .hist-item > summary{grid-template-columns:auto minmax(0,1fr);} .hist-item > summary .hist-ic,.hist-item > summary .chip{display:none} .hist-b{padding:0 12px 12px} }
 /* ===== Paramétrage ===== */
 .pr-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border-top:1px solid var(--line);padding:12px 0}
 .pr-row:first-of-type{border-top:0}
@@ -882,7 +914,11 @@ function renderHead(d){
       ${d.reference?`<div><span class="lbl">Référence</span><b>${esc(d.reference)}</b></div>`:""}
       <div><span class="lbl">Ouvert par</span><b>${esc(nameOf(d.auteur))}</b></div>
     </div>
-    ${d.cat==="reunion"&&d.reunion?reuHtml(d):(d.cat==="ago"&&/^Synth[eè]se/i.test(d.description||"")?agoHtml(d):(d.description?`<p class="desc">${esc(d.description)}</p>`:""))}
+    ${(()=>{ const body=d.cat==="reunion"&&d.reunion?reuHtml(d):(d.cat==="ago"&&/^Synth[eè]se/i.test(d.description||"")?agoHtml(d):(d.description?`<p class="desc">${esc(d.description)}</p>`:""));
+      const long=String(d.description||"").length+JSON.stringify(d.reunion||{}).length>420;
+      if(!body || !long) return body;
+      const lab=d.cat==="ago"?"Synthèse du procès-verbal":d.cat==="reunion"?"Compte rendu de la réunion":"Description du dossier";
+      return `<details class="head-fold"><summary><span class="lbl">${lab}</span><span class="fold-hint">Dérouler</span></summary><div class="head-fold-b">${body}</div></details>`; })()}
     <div class="dtools">
       ${S.canWrite?`<label class="lbl" for="stSel" style="margin-right:2px">Statut</label><select class="field" id="stSel">${stOpts}</select>`:`<span class="chip st st-${esc(d.statut)}">${esc(STATUTS[d.statut]||"Ouvert")}</span>`}
       <button class="btn btn-ghost" type="button" data-act="copylink">${I.link}<span>Lien</span></button>
@@ -904,7 +940,76 @@ const PAGES={
   huissier:{titre:"Huissier", court:"Huissier", anchor:"huis-constats", kw:["huissier"],
     ic:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h2"/><path d="m14 16 1.5 1.5L18 15"/>',
     intro:"Constats d'huissier : synthèse, procès-verbaux obtenus ou attendus, documents et échanges qui les mentionnent."},
+  historique:{titre:"Historique des échanges", court:"Historique", anchor:"",
+    ic:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 7v5l3 2"/>',
+    intro:"Tous les e-mails, appels et messages reçus et envoyés, tous dossiers confondus, du plus récent au plus ancien."},
 };
+S.hist={sens:"",canal:"",q:""};
+async function loadHist(){
+  S.pdata.historique={loading:true};
+  await Promise.resolve();
+  let msgs=[];
+  if(DEMO){ msgs=Object.entries(DEMO.msgs).flatMap(([did,ms])=>ms.filter(m=>m.type==="contact").map(m=>({...m,dossierId:did}))); }
+  else {
+    const {data,error}=await sb.from("messages").select("id,dossier_id,type,canal,sens,quand,qui,organisme,texte,cree_le,pieces,suite,tel,duree").eq("type","contact").order("quand",{ascending:false}).limit(3000);
+    if(error) toast("Impossible de lire l'historique des échanges.");
+    msgs=(data||[]).map(r=>({...rowToMsg(r),dossierId:r.dossier_id}));
+  }
+  msgs.sort((a,b)=>(b.quand||b.creeLe||0)-(a.quand||a.creeLe||0));
+  S.pdata.historique={msgs};
+  if(S.page==="historique" && !S.cur) renderDetail();
+}
+function histItems(){
+  const pd=S.pdata.historique; if(!pd||!pd.msgs) return null;
+  const q=normTxt(S.hist.q.trim());
+  return pd.msgs.filter(m=>(!S.hist.sens||m.sens===S.hist.sens) && (!S.hist.canal||m.canal===S.hist.canal)
+    && (!q || normTxt([m.texte,m.qui,m.organisme,(S.dossiers.find(d=>d.id===m.dossierId)||{}).titre].join(" ")).includes(q)));
+}
+function histListHtml(){
+  const items=histItems();
+  if(!items) return '<div class="muted"><span class="spin"></span> Chargement…</div>';
+  if(!items.length) return '<div class="cr-hint">Aucun échange ne correspond à ces filtres.</div>';
+  let lastMonth="", html=`<div class="muted" style="font-size:.85rem">${items.length} échange${items.length>1?"s":""}${items.length>400?" (les 400 plus récents affichés)":""}</div>`;
+  items.slice(0,400).forEach(m=>{
+    const t=m.quand||m.creeLe; const mo=t?new Date(t).toLocaleDateString("fr-FR",{month:"long",year:"numeric"}):"Sans date";
+    if(mo!==lastMonth){ html+=`<div class="hist-month">${esc(mo.charAt(0).toUpperCase()+mo.slice(1))}</div>`; lastMonth=mo; }
+    const c=CANAUX[m.canal]||CANAUX.message; const txt=String(m.texte||"");
+    const first=(txt.split("\n")[0]||"").replace(/^Objet\s*:\s*/i,"").trim();
+    const dos=S.dossiers.find(d=>d.id===m.dossierId);
+    html+=`<details class="hist-item ${m.sens==="sortant"?"out":"in"}"><summary>
+      <span class="hist-ic">${icon(c.ic)}</span>
+      <span class="hist-when">${esc(t?new Date(t).toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"}):"")}<small>${esc(fmtHeure(t))}</small></span>
+      <span class="chip ${m.sens==="sortant"?"st-en_cours":"st-ouvert"}">${m.sens==="sortant"?"Envoyé":"Reçu"}</span>
+      <span class="hist-t"><b>${esc(qui(m))}</b><small>${esc(first.slice(0,120))}</small></span>
+    </summary><div class="hist-b">
+      <div class="muted" style="font-size:.84rem">${esc(c.label)} · ${esc(fmtDT(t))}${m.duree?` · ${esc(m.duree)} min`:""}${m.tel?` · ${esc(m.tel)}`:""}</div>
+      <div class="ech-txt">${esc(txt.slice(0,6000))}${txt.length>6000?" …":""}</div>
+      ${m.suite?`<p class="suite"><b>Suite à donner :</b> ${esc(m.suite)}</p>`:""}
+      ${(m.pieces||[]).filter(p=>p.kind!=="audio").map(p=>pieceLink(p)).join("")}
+      ${(m.pieces||[]).filter(p=>p.kind==="audio").map(p=>`<audio controls preload="none" data-path="${esc(p.id)}" src="${blobUrl(p.id)||""}"></audio>`).join("")}
+      ${dos?`<button type="button" class="pg-dos" data-open="${esc(dos.id)}" style="margin-left:0;text-align:left">Dossier : ${esc(dos.titre)}</button>`:""}
+    </div></details>`; });
+  return html;
+}
+function histHtml(){
+  if(!S.pdata.historique) loadHist();
+  const P=PAGES.historique;
+  const chip=(grp,val,lab)=>`<button type="button" class="chip" data-act="hist" data-g="${grp}" data-v="${val}" aria-pressed="${S.hist[grp]===val}">${esc(lab)}</button>`;
+  return `<div class="agpage">
+    <div class="agpage-h">
+      <button class="btn btn-ghost btn-icon back" type="button" data-act="pageback" aria-label="Retour à la liste">${I.back}</button>
+      <span class="lbl">Conseil syndical · Résidence Ile Verte</span>
+      <h2>${esc(P.titre)}</h2>
+      <p class="muted">${esc(P.intro)} Cliquez sur une ligne pour lire l'échange en entier.</p>
+      <div class="hist-filters">
+        <nav class="agidx">${chip("sens","","Tous")}${chip("sens","entrant","Reçus")}${chip("sens","sortant","Envoyés")}</nav>
+        <nav class="agidx">${chip("canal","","Tous types")}${chip("canal","email","E-mails")}${chip("canal","appel","Appels")}${chip("canal","message","Messages")}${chip("canal","courrier","Courriers")}${chip("canal","rdv","Rendez-vous")}</nav>
+        <input class="field" id="histQ" type="search" placeholder="Rechercher : nom, objet, mot…" value="${esc(S.hist.q)}" autocomplete="off">
+      </div>
+    </div>
+    <div id="histList" class="hist-list">${histListHtml()}</div>
+  </div>`;
+}
 const normTxt=t=>String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
 function toneOf(h){
   const t=normTxt(h||"");
@@ -1003,6 +1108,7 @@ function paramsHtml(){
 }
 function pageHtml(k){
   if(k==="params") return paramsHtml();
+  if(k==="historique") return histHtml();
   if(k==="ago") return agoPage();
   const P=PAGES[k]; const pd=S.pdata[k];
   if(!pd) loadPage(k);
@@ -1157,6 +1263,7 @@ function allPieces(){
   return out;
 }
 function renderSubtabs(){
+  if(!$("#subtabs")) return;
   const p=allPieces(); const n=p.image.length+p.audio.length+p.video.length+p.pdf.length;
   $("#subtabs").innerHTML = `<button class="subtab" type="button" data-sub="fil" aria-pressed="${S.sub==="fil"}">Discussion <span class="mono muted">${S.msgs.filter(m=>m.type!=="statut").length}</span></button>
   <button class="subtab" type="button" data-sub="journal" aria-pressed="${S.sub==="journal"}">Appels et échanges <span class="mono muted">${S.msgs.filter(m=>m.type==="contact").length}</span></button>
@@ -1849,6 +1956,7 @@ document.addEventListener("click", e=>{
   else if(a==="agoback"||a==="pageback"){ S.page=null; $("#detail").innerHTML=""; renderAll(); }
   else if(a==="page") showPage(t.dataset.page);
   else if(a==="gmail") gmailDialog();
+  else if(a==="hist"){ S.hist[t.dataset.g]=t.dataset.v; renderDetail(); }
   else if(a==="members") adminPanel();
   else if(a==="copy"){ const tx=t.dataset.txt||""; try{ navigator.clipboard.writeText(tx).then(()=>toast("Lien copié"),()=>toast(tx)); }catch(err){ toast(tx); } }
   else if(a==="yr"){ const y=t.dataset.y; if(S.openYrs.has(y)) S.openYrs.delete(y); else S.openYrs.add(y); renderList(); }
@@ -2064,6 +2172,7 @@ async function start(session){
 $("#btnOut").addEventListener("click",()=>sb&&sb.auth.signOut());
 $("#btnGmail").addEventListener("click",()=>gmailDialog());
 $("#btnParams").addEventListener("click",()=>showPage("params"));
+document.addEventListener("input",e=>{ if(e.target && e.target.id==="histQ"){ S.hist.q=e.target.value; const l=$("#histList"); if(l) l.innerHTML=histListHtml(); } });
 $("#btnAdmin").addEventListener("click",()=>adminPanel());
 fillSelects(); renderTabs(); renderDetail(); setTopH();
 if(WANT_DEMO){
