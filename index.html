@@ -835,9 +835,11 @@ function refreshProfiles(){}
 function renderTabs(){
   const cnt = c => S.dossiers.filter(d => (c==="tous"||d.cat===c) && (S.f.st!=="actifs" || !["resolu","clos"].includes(d.statut))).length;
   const items = [["tous","Tous les dossiers",""], ...Object.entries(CATS).map(([k,v])=>[k,v.long,"cat-"+k])];
-  $("#tabs").innerHTML = items.map(([k,l,cls]) =>
+  const discP=PAGES.discussion;
+  const discBtn=`<button type="button" class="tab tab-page" data-act="page" data-page="discussion" aria-pressed="${S.page==="discussion"}">${icon(discP.ic)}<span style="color:${S.page==="discussion"?"inherit":"var(--ink)"}">${esc(discP.court)}</span></button>`;
+  $("#tabs").innerHTML = discBtn + items.map(([k,l,cls]) =>
     `<button type="button" class="tab ${cls}" data-cat="${k}" aria-pressed="${S.f.cat===k}">${catIcon(k)}<span style="color:${S.f.cat===k?"inherit":"var(--ink)"}">${esc(l)}</span><span class="n">${S.loaded?cnt(k):"…"}</span></button>`).join("")
-    + Object.entries(PAGES).map(([k,p])=>`<button type="button" class="tab tab-page" data-act="page" data-page="${k}" aria-pressed="${S.page===k}">${icon(p.ic)}<span style="color:${S.page===k?"inherit":"var(--ink)"}">${esc(p.court)}</span></button>`).join("");
+    + Object.entries(PAGES).filter(([k])=>k!=="discussion").map(([k,p])=>`<button type="button" class="tab tab-page" data-act="page" data-page="${k}" aria-pressed="${S.page===k}">${icon(p.ic)}<span style="color:${S.page===k?"inherit":"var(--ink)"}">${esc(p.court)}</span></button>`).join("");
 }
 function filtered(){
   const q = S.f.q.trim().toLowerCase();
