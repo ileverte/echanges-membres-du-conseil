@@ -464,6 +464,21 @@ details.synth-sec.sec-fold{padding:0}
 .hist-year[open] > summary{background:var(--accent-soft);border-radius:12px 12px 0 0}
 .hist-year[open] .yr-chev{transform:rotate(90deg)}
 .hist-year-b{display:grid;gap:6px;padding:8px}
+.cs-list{display:flex;flex-direction:column;gap:10px;overflow:auto;max-height:calc(100dvh - var(--toph,80px) - 300px);min-height:260px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg);margin-top:10px}
+.cs-day{text-align:center;font-size:.78rem;color:var(--muted);margin:6px 0}
+.cs-day span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.cs-msg{display:flex;gap:8px;align-items:flex-end;max-width:min(80%,760px)}
+.cs-msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.cs-av{width:30px;height:30px;border-radius:50%;flex:none}
+.cs-bub{background:var(--surface);border:1px solid var(--line);border-radius:14px 14px 14px 4px;padding:8px 12px;min-width:120px}
+.cs-msg.mine .cs-bub{background:var(--accent-soft);border-color:transparent;border-radius:14px 14px 4px 14px}
+.cs-meta{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);margin-bottom:2px}
+.cs-meta b{color:var(--ink);font-size:.85rem}
+.cs-del{margin-left:auto;border:0;background:none;color:var(--muted);cursor:pointer;font-size:1.05rem;line-height:1;padding:0 2px;opacity:.5}
+.cs-del:hover,.cs-del:focus-visible{opacity:1;color:#b3261e}
+.cs-txt{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+.cs-comp{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.cs-comp textarea{flex:1;resize:vertical;min-height:52px}
 .hist-sub{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;background:var(--surface)}
 .hist-sub.tone-blue{border-left-color:#3b6fb6}.hist-sub.tone-red{border-left-color:#c0504d}.hist-sub.tone-green{border-left-color:#2e7d5b}
 .hist-sub > summary{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;list-style:none;font-size:.97rem}
@@ -763,7 +778,7 @@ async function loadDossiers(){
   const {data,error}=await sb.from("dossiers").select("*").order("maj_le",{ascending:false}).limit(1000);
   S.loaded=true;
   if(error){ toast("Impossible de lire les dossiers."); renderAll(); return; }
-  S.dossiers=data.map(rowToDossier);
+  S.dossiers=data.map(rowToDossier).filter(d=>d.id!==CS_ID);
   if(S.cur && !S.dossiers.some(d=>d.id===S.cur)){ closeDossier(); return; }
   renderAll(true);
 }
@@ -948,6 +963,9 @@ function renderHead(d){
     </div>`;
 }
 const PAGES={
+  discussion:{titre:"Discussion du conseil syndical", court:"Discussion", anchor:"",
+    ic:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/>',
+    intro:"Un espace d'échange entre les membres du conseil syndical, en dehors des dossiers. Les messages sont visibles uniquement par les membres connectés."},
   marche:{titre:"Marché de travaux de rénovation des toitures", court:"Marché", anchor:"trx-marche-costentin",
     ic:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><circle cx="12" cy="14" r="2.5"/><path d="m10.5 16-1 4 2.5-1.2 2.5 1.2-1-4"/>',
     intro:"Les pièces du marché COSTENTIN (acte d'engagement, CCAP, CCTP, DPGF, BPU, DQE), leurs versions antérieures, les offres comparées et les documents de suivi, avec les clauses essentielles à retenir."},
@@ -1163,9 +1181,76 @@ function paramsHtml(){
     </section>
   </div>`;
 }
+/* ---------- page Discussion du conseil syndical ---------- */
+const CS_ID="conseil-discussion";
+S.cs={msgs:null, chan:null, sending:false, missing:false, toEnd:false};
+async function loadCs(){
+  if(DEMO){ if(!S.cs.msgs) S.cs.msgs=[
+      {id:"d1",auteur:"nom:Hervé L.",texte:"Bonjour à tous, avez-vous reçu la réponse du syndic sur la garantie ETRAP ?",creeLe:Date.now()-26*3600e3},
+      {id:"d2",auteur:"demo-me",texte:"Oui, je l'ai ajoutée au dossier.\nOn en parle à la prochaine réunion ?",creeLe:Date.now()-25*3600e3}];
+    csRefresh(); return; }
+  const {data,error}=await sb.from("messages").select("id,auteur,auteur_nom,texte,cree_le,type,pieces").eq("dossier_id",CS_ID).order("cree_le",{ascending:true}).limit(1500);
+  if(error){ S.cs.msgs=S.cs.msgs||[]; toast("Impossible de lire la discussion."); }
+  else S.cs.msgs=data.filter(r=>!r.type).map(rowToMsg);
+  if(!S.cs.chan) S.cs.chan=sb.channel("cs-"+CS_ID).on("postgres_changes",{event:"*",schema:"public",table:"messages",filter:"dossier_id=eq."+CS_ID},()=>loadCs()).subscribe();
+  csRefresh();
+}
+function csRefresh(){
+  if(S.page!=="discussion"||S.cur) return;
+  const l=$("#csList"); if(!l){ renderDetail(); return; }
+  const atEnd=l.scrollHeight-l.scrollTop-l.clientHeight<80;
+  l.innerHTML=csListHtml(); if(atEnd||S.cs.toEnd){ l.scrollTop=l.scrollHeight; S.cs.toEnd=false; }
+}
+function csListHtml(){
+  const ms=S.cs.msgs;
+  if(!ms) return '<div class="muted"><span class="spin"></span> Chargement…</div>';
+  if(S.cs.missing) return '<div class="cr-hint">La discussion n\'est pas encore activée : exécutez une fois le fichier <b>discussion-conseil.sql</b> dans Supabase (SQL Editor), puis rechargez la page.</div>';
+  if(!ms.length) return '<div class="cr-hint">Aucun message pour l\'instant. Écrivez le premier message ci-dessous.</div>';
+  let html="", jour="";
+  ms.forEach(m=>{ const j=fmtJour(m.creeLe); if(j!==jour){ jour=j; html+=`<div class="cs-day"><span>${esc(j)}</span></div>`; }
+    const mine=m.auteur===S.me; const canDel=mine||S.owner;
+    html+=`<div class="cs-msg${mine?" mine":""}"><img class="cs-av" src="${avOf(m.auteur)}" alt=""><div class="cs-bub"><div class="cs-meta"><b>${esc(mine?"Moi":nameOf(m.auteur))}</b><span>${esc(fmtHeure(m.creeLe))}</span>${canDel?`<button type="button" class="cs-del" data-act="cs-del" data-id="${esc(m.id)}" title="Supprimer ce message" aria-label="Supprimer ce message">×</button>`:""}</div><div class="cs-txt">${esc(m.texte)}</div></div></div>`; });
+  return html;
+}
+function csHtml(){
+  if(!S.cs.msgs) setTimeout(loadCs,0);
+  setTimeout(()=>{ const l=$("#csList"); if(l) l.scrollTop=l.scrollHeight; },0);
+  const P=PAGES.discussion;
+  return `<div class="agpage cs-page">
+    <div class="agpage-h">
+      <button class="btn btn-ghost btn-icon back" type="button" data-act="pageback" aria-label="Retour à la liste">${I.back}</button>
+      <span class="lbl">Conseil syndical · Résidence Ile Verte</span>
+      <h2>${esc(P.titre)}</h2>
+      <p class="muted">${esc(P.intro)}</p>
+    </div>
+    <div id="csList" class="cs-list" aria-live="polite">${csListHtml()}</div>
+    ${S.canWrite?`<div class="cs-comp"><textarea class="field" id="csTxt" rows="2" placeholder="Écrire un message aux membres du conseil… (Entrée pour envoyer, Maj + Entrée pour aller à la ligne)"></textarea>${S.dict?`<button class="btn dict-btn" type="button" data-act="cs-dict" data-label="Dicter" title="Dicter le message au micro : le texte s'écrit tout seul">${I.dict}<span>Dicter</span></button>`:""}<button class="btn btn-primary" type="button" data-act="cs-send">Envoyer</button></div>${S.dict?"":`<p class="muted" style="font-size:.8rem;margin:6px 0 0">La dictée n'est pas disponible dans ce navigateur : utilisez Chrome, Edge ou Safari, ou la touche micro du clavier de votre téléphone.</p>`}`:""}
+  </div>`;
+}
+async function csSend(){
+  const ta=$("#csTxt"); if(!ta||S.cs.sending) return;
+  if(S.dictTarget==="csTxt"&&S.dict&&S.dict.active()) S.dict.stop().catch(()=>{});
+  const txt=ta.value.trim(); if(!txt) return;
+  S.cs.sending=true;
+  try{
+    if(DEMO){ S.cs.msgs.push({id:"d"+Date.now(),auteur:S.me,texte:txt,creeLe:Date.now()}); }
+    else { const {error}=await sb.from("messages").insert(msgToRow({texte:txt},CS_ID));
+      if(error){ if(error.code==="23503"){ S.cs.missing=true; csRefresh(); } throw error; } }
+    ta.value=""; S.cs.toEnd=true; if(DEMO) csRefresh(); else await loadCs();
+  }catch(err){ toast(S.cs.missing?"Discussion non activée : exécutez discussion-conseil.sql dans Supabase.":"Envoi impossible. Réessayez."); }
+  finally{ S.cs.sending=false; ta.focus(); }
+}
+function csDel(id){
+  confirmBox("Supprimer ce message ?","Il disparaîtra de la discussion pour tous les membres.","Supprimer",async()=>{
+    try{ if(DEMO) S.cs.msgs=S.cs.msgs.filter(m=>m.id!==id);
+      else { const {error}=await sb.from("messages").delete().eq("id",id); if(error) throw error; await loadCs(); }
+      csRefresh(); }catch(err){ toast("Suppression impossible."); } });
+}
+document.addEventListener("keydown",e=>{ if(e.target&&e.target.id==="csTxt"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); csSend(); } });
 function pageHtml(k){
   if(k==="params") return paramsHtml();
   if(k==="historique") return histHtml();
+  if(k==="discussion") return csHtml();
   if(k==="ago") return agoPage();
   const P=PAGES[k]; const pd=S.pdata[k];
   if(!pd) loadPage(k);
@@ -1294,7 +1379,7 @@ async function loadAgoMsgs(ids){
 }
 function showAgoPage(){ showPage("ago"); }
 function showPage(k){
-  if(k==="ago"){ S.f.cat="ago"; S.agoMsgs=null; } else S.pdata[k]=null;
+  if(k==="ago"){ S.f.cat="ago"; S.agoMsgs=null; } else if(k!=="discussion") S.pdata[k]=null;
   S.page=k;
   if(S.cur) closeDossier(); else { $("#detail").innerHTML=""; renderAll(); }
   $("#detail").scrollTop=0;
@@ -2014,6 +2099,9 @@ document.addEventListener("click", e=>{
   else if(a==="page") showPage(t.dataset.page);
   else if(a==="gmail") gmailDialog();
   else if(a==="hist"){ S.hist[t.dataset.g]=t.dataset.v; renderDetail(); }
+  else if(a==="cs-send") csSend();
+  else if(a==="cs-dict"){ S.dictTarget="csTxt"; startDict(); }
+  else if(a==="cs-del") csDel(t.dataset.id);
   else if(a==="members") adminPanel();
   else if(a==="copy"){ const tx=t.dataset.txt||""; try{ navigator.clipboard.writeText(tx).then(()=>toast("Lien copié"),()=>toast(tx)); }catch(err){ toast(tx); } }
   else if(a==="yr"){ const y=t.dataset.y; if(S.openYrs.has(y)) S.openYrs.delete(y); else S.openYrs.add(y); renderList(); }
@@ -2060,6 +2148,7 @@ function scheduleMsgSearch(){
       hits=(data||[]).map(r=>({...r,cree_le:ts(r.cree_le)}));
     }
     if(S.f.q.trim()!==q) return;
+    hits=hits.filter(h=>h.dossier_id!==CS_ID);
     S.msgHits=hits.sort((a,b)=>(b.cree_le||0)-(a.cree_le||0)); renderList();
   },300);
 }
