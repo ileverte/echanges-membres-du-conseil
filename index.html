@@ -317,6 +317,9 @@ body::before{background:var(--brand)}
 /* Accueil compact, en haut de page */
 .welcome.welcome-top{margin:0 auto;max-width:860px;width:100%;padding:18px 22px 28px;text-align:left;display:grid;gap:8px;align-content:start}
 .wl-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;justify-content:space-between}
+.wl-acts{display:flex;flex-wrap:wrap;gap:8px}
+.btn-disc{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);font-weight:600}
+.btn-disc:hover{background:var(--accent);color:var(--accent-ink)}
 .welcome-top h2{font-size:1.35rem;margin:2px 0 0}
 .wl-sub{font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
 .welcome-top .wtiles{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin:0}
@@ -465,6 +468,12 @@ details.synth-sec.sec-fold{padding:0}
 .hist-year[open] .yr-chev{transform:rotate(90deg)}
 .hist-year-b{display:grid;gap:6px;padding:8px}
 .cs-list{display:flex;flex-direction:column;gap:10px;overflow:auto;max-height:calc(100dvh - var(--toph,80px) - 300px);min-height:260px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg);margin-top:10px}
+.cs-welcome{margin-top:10px;padding:16px 20px;border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:14px;background:var(--surface);line-height:1.5}
+.cs-welcome h3{margin:0 0 8px;font-size:1.1rem;color:var(--accent)}
+.cs-welcome p{margin:0 0 8px}
+.cs-welcome ul{margin:0 0 10px;padding-left:20px;display:grid;gap:4px}
+.cs-welcome-f{display:flex;justify-content:flex-end}
+.cs-wlink{margin-top:6px;border:0;background:none;padding:2px 0;color:var(--accent);text-decoration:underline;cursor:pointer;font:inherit;font-size:.85rem}
 .cs-day{text-align:center;font-size:.78rem;color:var(--muted);margin:6px 0}
 .cs-day span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
 .cs-msg{display:flex;gap:8px;align-items:flex-end;max-width:min(80%,760px)}
@@ -902,7 +911,8 @@ function renderDetail(){
     const stat=(n,l,cls,act)=>`<button type="button" class="tdb-stat ${cls}" ${act}><b>${n}</b><span>${esc(l)}</span></button>`;
     host.innerHTML = `<div class="tdb">
       <div class="wl-head"><div><span class="lbl">Conseil syndical · Résidence Ile Verte</span><h2>Tableau de bord</h2></div>
-      ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}</div>
+      <div class="wl-acts"><button class="btn btn-disc" type="button" data-act="page" data-page="discussion" title="Échanger entre membres du conseil syndical">${icon(PAGES.discussion.ic)}<span>Discussion du conseil</span></button>
+      ${S.canWrite&&S.loaded?'<button class="btn btn-primary" type="button" data-act="new">Créer un dossier</button>':""}</div></div>
       <div class="tdb-stats">
         ${stat(actifs.length,"dossiers actifs","s-acc",'data-act="flt" data-st="actifs"')}
         ${stat(urg.length,"urgents","s-dan",'data-act="flt" data-st="actifs"')}
@@ -1212,6 +1222,28 @@ function csListHtml(){
     html+=`<div class="cs-msg${mine?" mine":""}"><img class="cs-av" src="${avOf(m.auteur)}" alt=""><div class="cs-bub"><div class="cs-meta"><b>${esc(mine?"Moi":nameOf(m.auteur))}</b><span>${esc(fmtHeure(m.creeLe))}</span>${canDel?`<button type="button" class="cs-del" data-act="cs-del" data-id="${esc(m.id)}" title="Supprimer ce message" aria-label="Supprimer ce message">×</button>`:""}</div><div class="cs-txt">${esc(m.texte)}</div></div></div>`; });
   return html;
 }
+const CS_WKEY=()=>"iv-cs-bienvenue-"+(S.me||"");
+function csWelcomeSeen(){ try{ return localStorage.getItem(CS_WKEY())==="1"; }catch(e){ return !!S.cs.wSeen; } }
+function csWelcomeSet(v){ S.cs.wSeen=v; try{ if(v) localStorage.setItem(CS_WKEY(),"1"); else localStorage.removeItem(CS_WKEY()); }catch(e){} }
+function csWelcomeHtml(){
+  if(csWelcomeSeen()) return `<button type="button" class="cs-wlink" data-act="cs-welcome-show">Revoir le message de bienvenue</button>`;
+  return `<section class="cs-welcome" aria-label="Message de bienvenue">
+    <h3>Bienvenue sur l'application du conseil syndical</h3>
+    <p>Bonjour à toutes et à tous,</p>
+    <p>Je suis heureuse de vous accueillir sur notre application de suivi des dossiers de la Résidence Ile Verte. Elle rassemble en un seul endroit les dossiers (travaux, interventions, signalements, assemblées générales, réunions), les synthèses (marché des toitures, comptes rendus de chantier, avocat, huissier) et l'historique des échanges avec le syndic.</p>
+    <p><b>Cette page « Discussion » est faite pour échanger entre nous</b>, membres du conseil, en dehors des dossiers : poser une question, partager une information, proposer une date de réunion, donner son avis avant une réponse au syndic. Seuls les membres connectés voient ces messages.</p>
+    <ul>
+      <li><b>Complétez votre profil</b> (bouton en haut de la page) : nom, bâtiment et logement, pour que chacun sache qui écrit.</li>
+      <li><b>Pour écrire</b>, tapez votre message en bas : <b>Entrée</b> pour l'envoyer, <b>Maj + Entrée</b> pour aller à la ligne.</li>
+      <li><b>Vous préférez parler ?</b> Cliquez sur <b>Dicter</b> : le texte s'écrit tout seul. Relisez avant d'envoyer.</li>
+      <li><b>Pour une question sur un dossier précis</b>, utilisez plutôt l'onglet « Discussion » à l'intérieur de ce dossier : l'échange restera rangé au bon endroit.</li>
+      <li>Vous pouvez supprimer vos propres messages avec la petite croix.</li>
+    </ul>
+    <p>N'hésitez pas à me faire signe si quelque chose ne fonctionne pas ou si vous avez des idées d'amélioration.</p>
+    <p>Au plaisir d'échanger avec vous ici,<br><b>Catherine</b></p>
+    <div class="cs-welcome-f"><button class="btn btn-primary" type="button" data-act="cs-welcome-ok">J'ai compris</button></div>
+  </section>`;
+}
 function csHtml(){
   if(!S.cs.msgs) setTimeout(loadCs,0);
   setTimeout(()=>{ const l=$("#csList"); if(l) l.scrollTop=l.scrollHeight; },0);
@@ -1223,6 +1255,7 @@ function csHtml(){
       <h2>${esc(P.titre)}</h2>
       <p class="muted">${esc(P.intro)}</p>
     </div>
+    <div id="csWelcome">${csWelcomeHtml()}</div>
     <div id="csList" class="cs-list" aria-live="polite">${csListHtml()}</div>
     ${S.canWrite?`<div class="cs-comp"><textarea class="field" id="csTxt" rows="2" placeholder="Écrire un message aux membres du conseil… (Entrée pour envoyer, Maj + Entrée pour aller à la ligne)"></textarea>${S.dict?`<button class="btn dict-btn" type="button" data-act="cs-dict" data-label="Dicter" title="Dicter le message au micro : le texte s'écrit tout seul">${I.dict}<span>Dicter</span></button>`:""}<button class="btn btn-primary" type="button" data-act="cs-send">Envoyer</button></div>${S.dict?"":`<p class="muted" style="font-size:.8rem;margin:6px 0 0">La dictée n'est pas disponible dans ce navigateur : utilisez Chrome, Edge ou Safari, ou la touche micro du clavier de votre téléphone.</p>`}`:""}
   </div>`;
@@ -2100,6 +2133,7 @@ document.addEventListener("click", e=>{
   else if(a==="gmail") gmailDialog();
   else if(a==="hist"){ S.hist[t.dataset.g]=t.dataset.v; renderDetail(); }
   else if(a==="cs-send") csSend();
+  else if(a==="cs-welcome-ok"||a==="cs-welcome-show"){ csWelcomeSet(a==="cs-welcome-ok"); const w=$("#csWelcome"); if(w) w.innerHTML=csWelcomeHtml(); if(a==="cs-welcome-ok"){ const ta=$("#csTxt"); if(ta) ta.focus(); } }
   else if(a==="cs-dict"){ S.dictTarget="csTxt"; startDict(); }
   else if(a==="cs-del") csDel(t.dataset.id);
   else if(a==="members") adminPanel();
